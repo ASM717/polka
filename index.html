@@ -112,6 +112,8 @@ body.dragging .dropveil{display:grid}
 #reader.scroll #viewport{overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; width:min(calc(100% - var(--margin)), 35em); padding-right:calc(var(--margin) / 2)}
 #flow{position:relative; font-family:var(--rfont); line-height:var(--rlh); text-align:var(--ralign); hyphens:var(--hyph); -webkit-hyphens:var(--hyph); overflow-wrap:break-word; color:var(--ink); orphans:2; widows:2}
 #reader.paged #flow{column-fill:auto}
+#reader.spread #viewport{width:min(calc(100% - 2 * var(--margin)), calc(68em + 48px))}
+#reader.spread #flow{column-rule:1px solid var(--rule)}
 #reader.scroll #flow{padding-bottom:3em}
 #flow p{margin:0; text-indent:1.5em}
 #flow p.empty{text-indent:0}
@@ -194,6 +196,7 @@ body.dragging .dropveil{display:grid}
 .sw-sepia{background:#F0E5CC; color:#3A2E21}
 .sw-dark{background:#16181B; color:#D3CEC4}
 .sw-eink{background:#fff; color:#000; border:2px solid #000!important}
+.sw-sched{background:linear-gradient(90deg,#F6F6F2 50%,#16181B 50%); color:#888}
 .steppers{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
 .stepper{display:flex; flex-direction:column; gap:6px}
 .stepper .ctl{display:flex; align-items:center; justify-content:space-between; border:1px solid var(--rule); border-radius:8px; background:var(--bg)}
@@ -308,6 +311,21 @@ body.dragging .dropveil{display:grid}
 #dictFoot a{color:var(--accent)}
 ::highlight(polka-word){text-decoration:underline dotted 2px; text-decoration-color:var(--accent); text-underline-offset:3px}
 
+/* ---------- Comfort: hours, warm filter, custom font, autoscroll ---------- */
+.hours{display:flex; flex-wrap:wrap; gap:10px 18px}
+.hours label{display:flex; align-items:center; gap:8px; font-size:15px}
+.hours input{font:inherit; font-size:16px; min-height:42px; padding:0 10px; border:1px solid var(--rule); border-radius:8px; background:var(--bg); color:var(--ink)}
+.font-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.font-actions .btn{flex:1 1 auto; font-size:14px; min-height:40px; padding:6px 12px}
+.warm-row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.warm-row .stepper{flex:0 0 150px}
+.warm-row .seg{flex:1 1 200px}
+#warm{position:fixed; inset:0; z-index:70; pointer-events:none; background:#FF9A3D; mix-blend-mode:multiply; opacity:0; transition:opacity .4s}
+.autobar{position:absolute; left:50%; bottom:calc(44px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:6; display:flex; align-items:center; background:var(--surface); color:var(--ink); border:1px solid var(--rule); border-radius:24px; box-shadow:var(--shadow); white-space:nowrap}
+.autobar button{width:44px; height:44px; border:0; background:none; color:inherit; font:inherit; font-size:20px; cursor:pointer; display:grid; place-items:center}
+.autobar span{font-size:13px; color:var(--muted); padding:0 4px; font-variant-numeric:tabular-nums; min-width:96px; text-align:center}
+:root[data-theme="eink"] .autobar{border-width:2px; box-shadow:none}
+
 /* ---------- Vocabulary ---------- */
 #wordsSheet .find-box{flex-wrap:wrap}
 #wBook{flex:1 1 100%; min-width:0; font:inherit; font-size:15px; min-height:44px; padding:0 10px; border:1px solid var(--rule); border-radius:8px; background:var(--bg); color:var(--ink)}
@@ -370,7 +388,7 @@ body.dragging .dropveil{display:grid}
   <p class="empty-note" id="libNone" hidden>Подходящих книг нет.</p>
   <div class="shelf" id="shelf"></div>
   <input type="file" id="fileInput" multiple hidden>
-  <p class="lib-foot">Версия 0.5: словарик и повторение слов по карточкам. Работает офлайн после первого открытия (поиску в словаре нужен интернет).</p>
+  <p class="lib-foot">Версия 0.6: разворот, тема по расписанию, тёплый фильтр, автопрокрутка, свой шрифт и настройки для отдельной книги. Работает офлайн после первого открытия (поиску в словаре нужен интернет).</p>
 </main>
 
 <div id="reader" class="paged" aria-hidden="true">
@@ -398,6 +416,13 @@ body.dragging .dropveil{display:grid}
   </div>
   <div class="runfoot"><span id="runPage"></span><span id="runLeft"></span><span id="runPct"></span></div>
   <button class="btn back-pill" id="backPill" type="button" hidden>Вернуться назад</button>
+  <div class="autobar" id="autoBar" role="toolbar" aria-label="Автопрокрутка" hidden>
+    <button type="button" data-auto="pause" id="autoPause" aria-label="Пауза"></button>
+    <button type="button" data-auto="slower" aria-label="Медленнее">−</button>
+    <span id="autoSpeed"></span>
+    <button type="button" data-auto="faster" aria-label="Быстрее">+</button>
+    <button type="button" data-auto="stop" aria-label="Выключить">×</button>
+  </div>
   <div class="selbar" id="selBar" role="toolbar" aria-label="Действия с выделенным текстом" hidden>
     <button type="button" data-sel="quote">Цитата</button>
     <button type="button" data-sel="note">Заметка</button>
@@ -411,6 +436,7 @@ body.dragging .dropveil{display:grid}
       <button class="btn" id="prevCh" type="button">Предыдущая глава</button>
       <button class="btn" id="nextCh" type="button">Следующая глава</button>
     </div>
+    <div class="nav-row"><button class="btn" id="autoBtn" type="button">Автолистание</button></div>
   </div>
 </div>
 
@@ -509,7 +535,11 @@ body.dragging .dropveil{display:grid}
         <button type="button" data-k="theme" data-v="sepia"><span class="sw sw-sepia">Аа</span>Сепия</button>
         <button type="button" data-k="theme" data-v="dark"><span class="sw sw-dark">Аа</span>Тёмная</button>
         <button type="button" data-k="theme" data-v="eink"><span class="sw sw-eink">Аа</span>E-ink</button>
+        <button type="button" data-k="theme" data-v="schedule"><span class="sw sw-sched">Аа</span>Расписание</button>
       </div>
+    </div>
+    <div class="row" id="hoursRow" hidden><div class="row-label">Тёмные часы — тёмная тема и вечерний тёплый фильтр</div>
+      <div class="hours"><label>с <input type="time" id="darkFrom"></label><label>до <input type="time" id="darkTo"></label></div>
     </div>
     <div class="row"><div class="row-label">Шрифт</div>
       <div class="seg">
@@ -517,7 +547,10 @@ body.dragging .dropveil{display:grid}
         <button type="button" data-k="font" data-v="ptserif" style="font-family:'PT Serif',serif">PT Serif</button>
         <button type="button" data-k="font" data-v="golos" style="font-family:'Golos Text',sans-serif">Golos</button>
         <button type="button" data-k="font" data-v="system" style="font-family:system-ui,sans-serif">Системный</button>
+        <button type="button" data-k="font" data-v="custom" id="fontCustom" style="font-family:'PolkaCustom',serif" hidden>Свой</button>
       </div>
+      <div class="font-actions"><button class="btn" type="button" id="fontUpload">Загрузить свой шрифт…</button><button class="btn danger" type="button" id="fontRemove" hidden>Удалить свой шрифт</button></div>
+      <input type="file" id="fontInput" accept=".ttf,.otf,.woff,.woff2,font/ttf,font/otf,font/woff,font/woff2" hidden>
     </div>
     <div class="row">
       <div class="steppers">
@@ -535,6 +568,18 @@ body.dragging .dropveil{display:grid}
     <div class="row"><div class="row-label">Режим чтения</div>
       <div class="seg"><button type="button" data-k="mode" data-v="paged">Листать страницы</button><button type="button" data-k="mode" data-v="scroll">Прокручивать</button></div>
     </div>
+    <div class="row" id="spreadRow"><div class="row-label">Разворот на широком экране — две страницы рядом</div>
+      <div class="seg"><button type="button" data-k="spread" data-v="auto">Включён</button><button type="button" data-k="spread" data-v="off">Выключен</button></div>
+    </div>
+    <div class="row"><div class="row-label">Тёплый фильтр — меньше синего света</div>
+      <div class="warm-row">
+        <div class="stepper"><div class="ctl"><button type="button" data-step="warm" data-d="-1" aria-label="Слабее">−</button><output id="o-warm"></output><button type="button" data-step="warm" data-d="1" aria-label="Сильнее">+</button></div></div>
+        <div class="seg" id="warmWhenRow"><button type="button" data-k="warmWhen" data-v="night">В тёмные часы</button><button type="button" data-k="warmWhen" data-v="always">Всегда</button></div>
+      </div>
+    </div>
+    <div class="row" id="bookTextRow" hidden>
+      <label class="check"><input type="checkbox" id="bookText"> Шрифт, размер, интервал и поля — только для этой книги</label>
+    </div>
   </div>
 </aside>
 
@@ -545,6 +590,7 @@ body.dragging .dropveil{display:grid}
 </aside>
 
 <div class="toast" id="toast" role="status" hidden></div>
+<div id="warm" aria-hidden="true"></div>
 <div class="dropveil">Отпустите, чтобы добавить на полку</div>
 
 <script>
@@ -605,7 +651,10 @@ const FONTS = {
   golos: '"Golos Text", system-ui, sans-serif',
   system: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
 };
-const DEFAULTS = { theme: 'auto', font: 'literata', size: 19, lh: 1.55, margin: 24, align: 'justify', mode: 'paged', hyph: true };
+const DEFAULTS = { theme: 'auto', font: 'literata', size: 19, lh: 1.55, margin: 24, align: 'justify', mode: 'paged', hyph: true,
+  spread: 'auto', darkFrom: '21:00', darkTo: '07:00', warm: 0, warmWhen: 'night', autoSpeed: 4 };
+/* Text settings that a book can override (meta.text); everything else is global */
+const TEXT_KEYS = ['font', 'size', 'lh', 'margin', 'align', 'hyph'];
 let S = { ...DEFAULTS };
 try { Object.assign(S, JSON.parse(localStorage.getItem('polka-settings') || '{}')); } catch (e) {}
 
@@ -1297,17 +1346,21 @@ async function renderChapter(i, where) {
   flow.style.visibility = '';
   updateChrome(); savePos();
 }
+/* Two pages side by side: paged mode on a wide landscape screen; one «page» step then shows two columns */
+const spreadOn = () => S.mode === 'paged' && S.spread !== 'off' && window.innerWidth >= 1000 && window.innerWidth > window.innerHeight;
 function layout() {
+  const spread = spreadOn();
+  reader.classList.toggle('spread', spread);
   if (S.mode === 'paged') {
     viewport.scrollTop = 0;
     const W = viewport.clientWidth, H = viewport.clientHeight;
     R.W = W; R.H = H;
-    Object.assign(flow.style, { width: W + 'px', height: H + 'px', columnWidth: W + 'px', columnGap: R.G + 'px' });
+    Object.assign(flow.style, { width: W + 'px', height: H + 'px', columnWidth: spread ? 'auto' : W + 'px', columnCount: spread ? '2' : 'auto', columnGap: R.G + 'px' });
     reader.style.setProperty('--imgmax', Math.max(80, H - 24) + 'px');
     const end = $('#endmark');
     R.pages = Math.max(1, Math.floor((end.offsetLeft + 1) / (W + R.G)) + 1);
   } else {
-    Object.assign(flow.style, { width: '', height: '', columnWidth: '', columnGap: '', transform: '' });
+    Object.assign(flow.style, { width: '', height: '', columnWidth: '', columnCount: '', columnGap: '', transform: '' });
     R.pages = 1; R.page = 0;
   }
 }
@@ -1460,6 +1513,8 @@ async function openBook(id) {
     $('#barTitle').textContent = book.title;
     document.title = book.title + ' — Полка';
     try { if (!(history.state && history.state.polka)) history.pushState({ polka: 'reader' }, ''); } catch (e) {}
+    applySettings();
+    if (meta.text && document.fonts) { try { await document.fonts.load(`16px ${FONTS[eff('font')] || FONTS.literata}`); } catch (e) {} }
     const pos = meta.pos || { ch: 0, r: 0 };
     await renderChapter(pos.ch || 0, { ratio: pos.r || 0 });
   } catch (err) {
@@ -1470,10 +1525,12 @@ function closeReader() {
   if (!reader.classList.contains('open')) return;
   statTick(); clearTimeout(saveT); writePos();
   ST.rec = null;
+  autoStop();
   closeSheets();
   reader.classList.remove('open', 'ui'); reader.setAttribute('aria-hidden', 'true'); library.removeAttribute('aria-hidden');
   hideSel();
   R.book = null; R.meta = null; R.tok++; flow.innerHTML = ''; paintQuotes();
+  applySettings();
   document.title = 'Полка — читалка FB2 и EPUB';
   renderLibrary();
 }
@@ -1483,7 +1540,7 @@ $('#closeBtn').onclick = () => {
 };
 window.addEventListener('popstate', () => { if (reader.classList.contains('open')) closeReader(); });
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) { statTick(); clearTimeout(saveT); writePos(); }
+  if (document.hidden) { statTick(); clearTimeout(saveT); writePos(); if (AS.on) autoPause(true); }
   else ST.last = Date.now(); // time away from the page is not reading time
 });
 
@@ -1527,7 +1584,7 @@ backPill.onclick = () => { const b = R.back; R.back = null; backPill.hidden = tr
 
 /* Input: taps, swipes, wheel, keys */
 reader.addEventListener('click', e => {
-  if (e.target.closest('.bar') || e.target.closest('.back-pill') || e.target.closest('.selbar')) return;
+  if (e.target.closest('.bar') || e.target.closest('.back-pill') || e.target.closest('.selbar') || e.target.closest('.autobar')) return;
   if (R.swiped) { R.swiped = false; return; }
   const a = e.target.closest('a');
   if (a && flow.contains(a)) { e.preventDefault(); handleLink(a); return; }
@@ -1535,6 +1592,7 @@ reader.addEventListener('click', e => {
   if (act) { if (act.dataset.act === 'nextch') renderChapter(R.ch + 1, 'start'); return; }
   if (String(window.getSelection() || '').trim()) return;
   if (R.ui) { setUI(false); return; }
+  if (AS.on) { autoPause(!AS.paused); return; }
   const x = e.clientX / window.innerWidth;
   if (S.mode !== 'paged' || (x >= 0.3 && x <= 0.7)) {
     const w = wordAt(e.clientX, e.clientY);
@@ -1612,6 +1670,70 @@ seek.addEventListener('change', () => {
 });
 $('#prevCh').onclick = () => { if (R.ch > 0) renderChapter(R.ch - 1, 'start'); };
 $('#nextCh').onclick = () => { if (R.book && R.ch < R.book.chapters.length - 1) renderChapter(R.ch + 1, 'start'); };
+
+/* Autoscroll: speed in lines per minute. Scroll mode moves the text smoothly, paged mode turns pages on a timer. */
+const AS = { on: false, paused: false, busy: false, raf: 0, timer: 0, last: 0, acc: 0, lock: null };
+const lineH = () => parseFloat(getComputedStyle(flow).lineHeight) || eff('size') * eff('lh');
+const lpm = () => S.autoSpeed * 4;
+function autoStart() {
+  if (!R.book) return;
+  Object.assign(AS, { on: true, paused: false, acc: 0 });
+  closeSheets(); setUI(false);
+  autoRun();
+}
+function autoRun() {
+  cancelAnimationFrame(AS.raf); clearTimeout(AS.timer);
+  updateAutoBar();
+  wakeLock(AS.on && !AS.paused);
+  if (!AS.on || AS.paused) return;
+  if (S.mode === 'scroll') { AS.last = performance.now(); AS.raf = requestAnimationFrame(autoFrame); }
+  else AS.timer = setTimeout(autoPage, Math.max(3000, R.H / lineH() / lpm() * 60000));
+}
+async function autoFrame(t) {
+  if (!AS.on || AS.paused || S.mode !== 'scroll') return;
+  const dt = Math.min(100, t - AS.last);
+  AS.last = t;
+  if (!AS.busy) {
+    AS.acc += lineH() * lpm() / 60000 * dt;
+    if (viewport.scrollTop + viewport.clientHeight >= viewport.scrollHeight - 2) {
+      if (R.ch >= R.book.chapters.length - 1) { autoStop(); toast('Книга закончилась'); return; }
+      AS.busy = true; await renderChapter(R.ch + 1, 'start'); AS.busy = false; AS.acc = 0;
+    } else if (AS.acc >= 1) { const px = Math.floor(AS.acc); AS.acc -= px; viewport.scrollTop += px; }
+  }
+  if (AS.on && !AS.paused) AS.raf = requestAnimationFrame(autoFrame);
+}
+function autoPage() {
+  if (!AS.on || AS.paused || !R.book) return;
+  if (R.page >= R.pages - 1 && R.ch >= R.book.chapters.length - 1) { autoStop(); toast('Книга закончилась'); return; }
+  next();
+  autoRun();
+}
+function autoPause(p) { if (AS.on) { AS.paused = p; autoRun(); } }
+function autoStop() { AS.on = false; AS.paused = false; autoRun(); }
+function updateAutoBar() {
+  $('#autoBar').hidden = !AS.on;
+  $('#autoSpeed').textContent = `${lpm()} строк/мин`;
+  $('#autoPause').innerHTML = AS.paused
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+  $('#autoPause').setAttribute('aria-label', AS.paused ? 'Продолжить' : 'Пауза');
+}
+async function wakeLock(on) {
+  try {
+    if (on && !AS.lock && navigator.wakeLock && document.visibilityState === 'visible') {
+      AS.lock = await navigator.wakeLock.request('screen');
+      AS.lock.addEventListener('release', () => { AS.lock = null; });
+    } else if (!on && AS.lock) { const l = AS.lock; AS.lock = null; await l.release(); }
+  } catch (e) {}
+}
+$('#autoBtn').onclick = autoStart;
+$('#autoBar').addEventListener('click', e => {
+  const b = e.target.closest('[data-auto]'); if (!b) return;
+  const a = b.dataset.auto;
+  if (a === 'pause') autoPause(!AS.paused);
+  else if (a === 'stop') autoStop();
+  else { S.autoSpeed = clamp(S.autoSpeed + (a === 'faster' ? 1 : -1), 1, 15); saveSettings(); autoRun(); }
+});
 
 /* Bookmarks */
 function chapterText(i) {
@@ -2078,6 +2200,7 @@ $('#findBtn').onclick = openSearch;
 const scrim = $('#scrim');
 function openSheet(id, focus = '.sheet-close') {
   closeSheets(true);
+  if (AS.on && !AS.paused) autoPause(true);
   const s = document.getElementById(id);
   s.classList.add('on'); scrim.classList.add('on');
   setTimeout(() => { const c = s.querySelector(focus); if (c) c.focus({ preventScroll: true }); }, 50);
@@ -2110,50 +2233,129 @@ $('#tocBtn').onclick = () => {
 $('#setBtn').onclick = () => { updateSettingsUI(); openSheet('setSheet'); };
 
 /* Settings UI */
-const STEPS = { size: [12, 40, 1], lh: [1.2, 2.2, 0.05], margin: [8, 96, 8] };
+const STEPS = { size: [12, 40, 1], lh: [1.2, 2.2, 0.05], margin: [8, 96, 8], warm: [0, 5, 1] };
+/* Effective value: the open book's override for text settings, otherwise the global setting */
+const bookText = () => (R.meta && R.meta.text) || null;
+const eff = k => { const t = bookText(); return t && TEXT_KEYS.includes(k) && k in t ? t[k] : S[k]; };
+const toMin = t => { const [h, m] = String(t).split(':').map(Number); return (h || 0) * 60 + (m || 0); };
+/* Inside the dark hours (darkFrom..darkTo, may wrap past midnight) */
+function nightNow() {
+  const d = new Date(), m = d.getHours() * 60 + d.getMinutes(), f = toMin(S.darkFrom), t = toMin(S.darkTo);
+  return f <= t ? m >= f && m < t : m >= f || m < t;
+}
 function updateSettingsUI() {
-  document.querySelectorAll('[data-k]').forEach(b => {
-    const k = b.dataset.k, v = k === 'hyph' ? (S.hyph ? '1' : '0') : String(S[k]);
+  document.querySelectorAll('#setSheet [data-k]').forEach(b => {
+    const k = b.dataset.k, v = k === 'hyph' ? (eff('hyph') ? '1' : '0') : String(eff(k));
     b.setAttribute('aria-pressed', String(b.dataset.v === v));
   });
-  $('#o-size').textContent = S.size;
-  $('#o-lh').textContent = S.lh.toFixed(2).replace(/0$/, '');
-  $('#o-margin').textContent = S.margin;
+  $('#o-size').textContent = eff('size');
+  $('#o-lh').textContent = eff('lh').toFixed(2).replace(/0$/, '');
+  $('#o-margin').textContent = eff('margin');
+  $('#o-warm').textContent = S.warm ? S.warm : 'выкл';
+  $('#darkFrom').value = S.darkFrom; $('#darkTo').value = S.darkTo;
+  $('#hoursRow').hidden = !(S.theme === 'schedule' || (S.warm && S.warmWhen === 'night'));
+  $('#warmWhenRow').hidden = !S.warm;
+  $('#spreadRow').hidden = S.mode !== 'paged';
+  $('#bookTextRow').hidden = !R.meta;
+  $('#bookText').checked = !!bookText();
+  $('#fontCustom').hidden = !FONTS.custom;
+  $('#fontCustom').textContent = customFont ? customFont.name : 'Свой';
+  $('#fontRemove').hidden = !FONTS.custom;
+}
+/* Theme and warm filter depend on the clock, so they are re-applied every minute */
+function applyTheme() {
+  const root = document.documentElement, night = nightNow();
+  const th = S.theme === 'schedule' ? (night ? 'dark' : 'light') : S.theme;
+  if (th === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', th);
+  const w = S.warm && (S.warmWhen === 'always' || night) ? S.warm : 0;
+  $('#warm').style.opacity = String(w * 0.07);
 }
 function applySettings() {
   const root = document.documentElement;
-  if (S.theme === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', S.theme);
-  root.style.setProperty('--rfont', FONTS[S.font] || FONTS.literata);
-  root.style.setProperty('--rsize', S.size + 'px');
-  root.style.setProperty('--rlh', S.lh);
-  root.style.setProperty('--ralign', S.align);
-  root.style.setProperty('--margin', S.margin + 'px');
-  root.style.setProperty('--hyph', S.hyph ? 'auto' : 'manual');
+  applyTheme();
+  root.style.setProperty('--rfont', FONTS[eff('font')] || FONTS.literata);
+  root.style.setProperty('--rsize', eff('size') + 'px');
+  root.style.setProperty('--rlh', eff('lh'));
+  root.style.setProperty('--ralign', eff('align'));
+  root.style.setProperty('--margin', eff('margin') + 'px');
+  root.style.setProperty('--hyph', eff('hyph') ? 'auto' : 'manual');
   reader.classList.toggle('paged', S.mode === 'paged');
   reader.classList.toggle('scroll', S.mode === 'scroll');
+  $('#autoBtn').textContent = S.mode === 'paged' ? 'Автолистание' : 'Автопрокрутка';
   updateSettingsUI();
-  try { localStorage.setItem('polka-settings', JSON.stringify(S)); } catch (e) {}
+  saveSettings();
+}
+function saveSettings() { try { localStorage.setItem('polka-settings', JSON.stringify(S)); } catch (e) {} }
+setInterval(applyTheme, 60000);
+async function afterTextChange(r, fontChanged) {
+  if (!R.book) return;
+  layout(); position({ ratio: r }); updateChrome();
+  if (fontChanged && document.fonts) {
+    try { await document.fonts.load(`16px ${FONTS[eff('font')] || FONTS.literata}`); } catch (err) {}
+    relayout();
+  }
 }
 $('#setSheet').addEventListener('click', async e => {
   const opt = e.target.closest('[data-k]'), step = e.target.closest('[data-step]');
   const r = R.book ? ratio() : 0;
   const prevMode = S.mode;
-  if (opt) {
-    const k = opt.dataset.k;
-    S[k] = k === 'hyph' ? opt.dataset.v === '1' : opt.dataset.v;
-  } else if (step) {
-    const k = step.dataset.step, [lo, hi, st] = STEPS[k];
-    S[k] = Math.round(clamp(S[k] + st * +step.dataset.d, lo, hi) * 100) / 100;
-  } else return;
+  let k;
+  if (opt) k = opt.dataset.k; else if (step) k = step.dataset.step; else return;
+  const target = TEXT_KEYS.includes(k) && bookText() ? bookText() : S;
+  if (opt) target[k] = k === 'hyph' ? opt.dataset.v === '1' : opt.dataset.v;
+  else { const [lo, hi, st] = STEPS[k]; target[k] = Math.round(clamp(eff(k) + st * +step.dataset.d, lo, hi) * 100) / 100; }
+  if (target !== S) DB.put('meta', R.meta).catch(() => {});
   applySettings();
   if (!R.book) return;
   if (S.mode !== prevMode) { renderChapter(R.ch, { ratio: r }); return; }
-  layout(); position({ ratio: r }); updateChrome();
-  if (opt && opt.dataset.k === 'font' && document.fonts) {
-    try { await document.fonts.load(`16px ${FONTS[S.font]}`); } catch (err) {}
-    relayout();
-  }
+  afterTextChange(r, k === 'font');
 });
+['darkFrom', 'darkTo'].forEach(id => $('#' + id).addEventListener('change', e => { if (e.target.value) { S[id] = e.target.value; applySettings(); } }));
+$('#bookText').addEventListener('change', e => {
+  if (!R.meta) return;
+  const r = ratio();
+  if (e.target.checked) { R.meta.text = {}; TEXT_KEYS.forEach(k => R.meta.text[k] = S[k]); }
+  else delete R.meta.text;
+  DB.put('meta', R.meta).catch(() => {});
+  applySettings(); afterTextChange(r, true);
+  toast(e.target.checked ? 'Шрифт, размер и поля теперь свои у этой книги' : 'Книга снова использует общие настройки текста');
+});
+
+/* Custom font: one file in the files store, registered as the «PolkaCustom» font face */
+const CUSTOM_FONT_ID = 'font:custom';
+let customFont = null;
+async function loadCustomFont(rec) {
+  const ff = new FontFace('PolkaCustom', rec.data);
+  await ff.load();
+  [...document.fonts].filter(f => f.family === 'PolkaCustom' || f.family === '"PolkaCustom"').forEach(f => document.fonts.delete(f));
+  document.fonts.add(ff);
+  customFont = { name: rec.name };
+  FONTS.custom = '"PolkaCustom", Georgia, serif';
+}
+$('#fontUpload').onclick = () => $('#fontInput').click();
+$('#fontInput').onchange = async () => {
+  const f = $('#fontInput').files[0]; $('#fontInput').value = '';
+  if (!f) return;
+  if (f.size > 15 * 1048576) { toast('Файл шрифта слишком большой (больше 15 МБ)', 5000); return; }
+  const rec = { id: CUSTOM_FONT_ID, data: await f.arrayBuffer(), name: f.name.replace(/\.(ttf|otf|woff2?)$/i, '').slice(0, 40) || 'Свой шрифт' };
+  try { await loadCustomFont(rec); } catch (e) { toast('Не удалось прочитать шрифт. Подойдут файлы TTF, OTF, WOFF и WOFF2.', 6000); return; }
+  try { await DB.put('files', rec); } catch (e) { toast('Шрифт работает, но не сохранился: ' + e.message, 6000); }
+  updateSettingsUI();
+  $('#fontCustom').click();
+  toast(`Шрифт «${rec.name}» загружен`);
+};
+$('#fontRemove').onclick = async e => {
+  if (!armed(e.currentTarget, 'Нажмите ещё раз')) return;
+  disarm(e.currentTarget, 'Удалить свой шрифт');
+  await DB.del('files', CUSTOM_FONT_ID).catch(() => {});
+  delete FONTS.custom; customFont = null;
+  [...document.fonts].filter(f => f.family === 'PolkaCustom' || f.family === '"PolkaCustom"').forEach(f => document.fonts.delete(f));
+  const r = R.book ? ratio() : 0;
+  if (S.font === 'custom') S.font = DEFAULTS.font;
+  if (bookText() && bookText().font === 'custom') { bookText().font = DEFAULTS.font; DB.put('meta', R.meta).catch(() => {}); }
+  applySettings(); afterTextChange(r, true);
+  toast('Свой шрифт удалён');
+};
 
 /* ================= Vocabulary ================= */
 // Word: { id, form (as in the text), word (article title), lang, defs: [{ lang, pos, items: [plain text] }],
@@ -2414,11 +2616,14 @@ async function exportBackup(withFiles) {
   toast('Готовлю резервную копию…', 60000);
   const zip = new JSZip();
   const stats = await DB.all('stats').catch(() => []), words = await DB.all('words').catch(() => []);
-  zip.file('polka-backup.json', JSON.stringify({ app: 'polka', backup: 1, created: Date.now(), settings: S, library: { sort: L.sort, filter: L.filter, tag: L.tag }, books: metas, stats, words }));
+  const data = { app: 'polka', backup: 1, created: Date.now(), settings: S, library: { sort: L.sort, filter: L.filter, tag: L.tag }, books: metas, stats, words };
   if (withFiles) for (const m of metas) {
     const f = await DB.get('files', m.id);
     if (f) zip.file('books/' + m.id, f.data, { compression: m.format === 'epub' || /\.zip$/i.test(m.name || '') ? 'STORE' : 'DEFLATE' });
   }
+  const font = await DB.get('files', CUSTOM_FONT_ID).catch(() => null);
+  if (font) { zip.file('fonts/custom', font.data); data.font = { name: font.name }; }
+  zip.file('polka-backup.json', JSON.stringify(data));
   const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
   download(blob, `polka-backup-${new Date().toISOString().slice(0, 10)}.zip`);
   toast(`Копия готова: книг ${metas.length}, ${fmtSize(blob.size)}`, 5000);
@@ -2480,6 +2685,11 @@ async function importBackup(file) {
       if (!cur || (w.edited || 0) > (cur.edited || 0)) await DB.put('words', w);
     }
     WL = null;
+    const fontFile = zip.file('fonts/custom');
+    if (fontFile && data.font) {
+      const rec = { id: CUSTOM_FONT_ID, data: await fontFile.async('arraybuffer'), name: String(data.font.name || 'Свой шрифт').slice(0, 40) };
+      try { await loadCustomFont(rec); await DB.put('files', rec); } catch (e) {}
+    }
   } catch (e) { console.error(e); toast('Восстановление прервалось: ' + e.message, 6000); renderLibrary(); return; }
   if (data.settings) { for (const k in DEFAULTS) if (k in data.settings) S[k] = data.settings[k]; applySettings(); }
   if (data.library) { if (SORTS[data.library.sort]) L.sort = data.library.sort; if (data.library.filter) L.filter = data.library.filter; if (data.library.tag) L.tag = data.library.tag; saveLib(); }
@@ -2505,6 +2715,11 @@ $('#bkpInput').onchange = () => {
 try { if (history.state && history.state.polka) history.replaceState(null, ''); } catch (e) {}
 applySettings();
 DB.ready().then(() => { $('#memWarn').hidden = !DB.isMemory; renderLibrary(); });
+DB.get('files', CUSTOM_FONT_ID).then(async rec => {
+  if (!rec) return;
+  try { await loadCustomFont(rec); } catch (e) { return; }
+  applySettings(); relayout();
+}).catch(() => {});
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
 if (document.fonts) document.fonts.ready.then(() => relayout());
 if ('serviceWorker' in navigator && window.isSecureContext) {
