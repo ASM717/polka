@@ -306,6 +306,25 @@ body.dragging .dropveil{display:grid}
 .dict-link{font:inherit; color:var(--accent); background:none; border:0; padding:0; cursor:pointer; text-align:inherit}
 .dict-back{margin-top:12px; font-size:14px}
 #dictFoot a{color:var(--accent)}
+::highlight(polka-word){text-decoration:underline dotted 2px; text-decoration-color:var(--accent); text-underline-offset:3px}
+
+/* ---------- Vocabulary ---------- */
+#wordsSheet .find-box{flex-wrap:wrap}
+#wBook{flex:1 1 100%; min-width:0; font:inherit; font-size:15px; min-height:44px; padding:0 10px; border:1px solid var(--rule); border-radius:8px; background:var(--bg); color:var(--ink)}
+#wTools{margin:6px 0 4px}
+.w-go:disabled{cursor:default; color:inherit; opacity:1}
+.w-head{display:block; font-size:16px}
+.w-head b{font-family:var(--serif); font-weight:600}
+.w-form{color:var(--muted); font-size:14px}
+.w-def{display:block; font-size:14px; line-height:1.4; margin-top:3px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.w-ctx{display:block; font-family:var(--rfont); font-size:14px; line-height:1.4; color:var(--muted); margin-top:5px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.w-ctx mark,.card-ctx mark{background:color-mix(in srgb, var(--accent) 24%, transparent); color:var(--ink); border-radius:2px}
+:root[data-theme="eink"] .w-ctx mark,:root[data-theme="eink"] .card-ctx mark{background:none; text-decoration:underline 2px; color:#000}
+.card{border:1px solid var(--rule); border-radius:12px; background:var(--bg); padding:22px 18px; margin-top:14px; min-height:180px}
+.card-word{font-family:var(--serif); font-weight:600; font-size:28px; line-height:1.2; text-align:center}
+.card-ctx{font-family:var(--rfont); font-size:16px; line-height:1.5; color:var(--muted); margin-top:14px; text-align:center}
+.card-back{margin-top:16px; padding-top:6px; border-top:1px solid var(--rule)}
+.card .sheet-text{text-align:center}
 .toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:60; background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:8px; font-size:14px; max-width:min(90vw,480px); text-align:center}
 </style>
 </head>
@@ -319,6 +338,7 @@ body.dragging .dropveil{display:grid}
     </div>
     <div class="lib-actions">
       <button class="btn" id="statsBtn" type="button">Статистика</button>
+      <button class="btn" id="wordsBtn" type="button">Слова</button>
       <button class="btn" id="backupBtn" type="button">Резервная копия</button>
       <button class="btn primary" id="addBtn" type="button">Добавить книги</button>
     </div>
@@ -350,7 +370,7 @@ body.dragging .dropveil{display:grid}
   <p class="empty-note" id="libNone" hidden>Подходящих книг нет.</p>
   <div class="shelf" id="shelf"></div>
   <input type="file" id="fileInput" multiple hidden>
-  <p class="lib-foot">Версия 0.4: статистика чтения, метки и серии, словарь. Работает офлайн после первого открытия (словарю нужен интернет).</p>
+  <p class="lib-foot">Версия 0.5: словарик и повторение слов по карточкам. Работает офлайн после первого открытия (поиску в словаре нужен интернет).</p>
 </main>
 
 <div id="reader" class="paged" aria-hidden="true">
@@ -422,6 +442,20 @@ body.dragging .dropveil{display:grid}
   <div class="sheet-body"><div id="dictBody"></div><p class="hint" id="dictFoot"></p></div>
 </aside>
 
+<aside class="sheet" id="wordsSheet" aria-label="Мои слова">
+  <div class="sheet-head"><h2>Мои слова</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="find-box"><input type="search" id="wFind" placeholder="Найти слово" autocomplete="off" aria-label="Найти слово"><select id="wBook" aria-label="Книга" hidden></select></div>
+  <div class="sheet-body">
+    <div class="sheet-actions" id="wTools"><button class="btn primary" type="button" id="wReview">Повторить</button><button class="btn" type="button" id="wExport">Экспорт для Anki</button></div>
+    <ul class="bm-list" id="wList"></ul>
+  </div>
+</aside>
+
+<aside class="sheet" id="reviewSheet" aria-label="Повторение слов">
+  <div class="sheet-head"><h2>Повторение</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="sheet-body" id="rvBody"></div>
+</aside>
+
 <aside class="sheet" id="bookSheet" aria-label="О книге">
   <div class="sheet-head"><h2>О книге</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="sheet-body">
@@ -429,6 +463,7 @@ body.dragging .dropveil{display:grid}
     <div class="sheet-actions">
       <button class="btn primary" type="button" id="bkRead">Читать</button>
       <button class="btn" type="button" id="bkDone">Отметить прочитанной</button>
+      <button class="btn" type="button" id="bkWords">Слова из книги</button>
       <button class="btn" type="button" id="bkQuotes">Сохранить цитаты в файл</button>
       <button class="btn danger" type="button" id="bkDel">Удалить с полки</button>
     </div>
@@ -446,7 +481,7 @@ body.dragging .dropveil{display:grid}
 <aside class="sheet" id="backupSheet" aria-label="Резервная копия">
   <div class="sheet-head"><h2>Резервная копия</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="sheet-body">
-    <p class="sheet-text">Копия — один файл .zip: книги, место чтения, закладки, цитаты, метки, статистика и настройки. Сохраните её, чтобы перенести полку на другое устройство или не потерять при очистке браузера.</p>
+    <p class="sheet-text">Копия — один файл .zip: книги, место чтения, закладки, цитаты, метки, слова, статистика и настройки. Сохраните её, чтобы перенести полку на другое устройство или не потерять при очистке браузера.</p>
     <label class="check"><input type="checkbox" id="bkpFiles" checked> Включить файлы книг</label>
     <p class="hint">Без файлов копия весит мало, но восстановить из неё можно только книги, которые уже есть на полке.</p>
     <button class="btn primary wide" type="button" id="bkpSave">Сохранить копию</button>
@@ -527,17 +562,18 @@ function toast(msg, ms = 2600) { const t = $('#toast'); t.textContent = msg; t.h
 /* ================= Storage (IndexedDB with in-memory fallback) ================= */
 const DB = (() => {
   let dbp = null, memory = false;
-  const mem = { meta: new Map(), files: new Map(), stats: new Map() };
+  const mem = { meta: new Map(), files: new Map(), stats: new Map(), words: new Map() };
   function open() {
     if (dbp) return dbp;
     dbp = new Promise(res => {
       try {
-        const rq = indexedDB.open('polka-reader', 2);
+        const rq = indexedDB.open('polka-reader', 3);
         rq.onupgradeneeded = () => {
           const db = rq.result;
           if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'id' });
           if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'id' });
           if (!db.objectStoreNames.contains('stats')) db.createObjectStore('stats', { keyPath: 'id' });
+          if (!db.objectStoreNames.contains('words')) db.createObjectStore('words', { keyPath: 'id' });
         };
         rq.onsuccess = () => res(rq.result);
         rq.onerror = () => { memory = true; res(null); };
@@ -992,6 +1028,8 @@ async function renderLibrary() {
   try { metas = await DB.all('meta'); } catch (e) { toast('Не удалось прочитать полку: ' + e.message, 5000); }
   $('#empty').hidden = metas.length > 0;
   $('#libTools').hidden = !metas.length;
+  const due = (await loadWords()).filter(w => w.due <= Date.now()).length;
+  $('#wordsBtn').textContent = due ? `Слова · ${due}` : 'Слова';
   const counts = { all: metas.length, reading: 0, new: 0, done: 0 };
   metas.forEach(m => counts[stateOf(m)]++);
   document.querySelectorAll('[data-filter]').forEach(b => {
@@ -1085,7 +1123,7 @@ async function openBookSheet(id) {
   const m = await DB.get('meta', id).catch(() => null); if (!m) return;
   bkCur = m;
   const p = isDone(m) ? 100 : Math.floor((m.progress || 0) * 100);
-  const nb = (m.bookmarks || []).length, nq = (m.quotes || []).length;
+  const nb = (m.bookmarks || []).length, nq = (m.quotes || []).length, nw = (await loadWords()).filter(w => w.bookId === m.id).length;
   $('#bkInfo').innerHTML = `<div class="bk-head"><div class="cover">${coverHtml(m)}</div><div>
       <div class="bk-t">${esc(m.title)}</div><div class="bk-a">${esc(authorsOf(m) || 'Автор не указан')}</div></div></div>
     <dl class="bk-dl">
@@ -1097,9 +1135,11 @@ async function openBookSheet(id) {
       ${m.readMs >= 60000 ? `<dt>Время чтения</dt><dd>${fmtDur(m.readMs)}</dd>` : ''}
       <dt>Закладки</dt><dd>${nb || 'нет'}</dd>
       <dt>Цитаты</dt><dd>${nq || 'нет'}</dd>
+      <dt>Слова</dt><dd>${nw || 'нет'}</dd>
     </dl>`;
   $('#bkDone').textContent = isDone(m) ? 'Снять отметку «Прочитана»' : 'Отметить прочитанной';
   $('#bkQuotes').hidden = !nq;
+  $('#bkWords').hidden = !nw;
   disarm($('#bkDel'), 'Удалить с полки');
   $('#bkTagNew').value = '';
   renderBookTags();
@@ -1139,6 +1179,7 @@ $('#bkDone').onclick = async () => {
   renderLibrary(); openBookSheet(bkCur.id);
 };
 $('#bkQuotes').onclick = () => { if (bkCur) saveQuotesFile(bkCur); };
+$('#bkWords').onclick = () => { if (bkCur) openWords(bkCur.id); };
 $('#bkDel').onclick = async e => {
   if (!bkCur || !armed(e.currentTarget, 'Нажмите ещё раз, чтобы удалить')) return;
   await DB.del('meta', bkCur.id); await DB.del('files', bkCur.id);
@@ -1409,6 +1450,7 @@ async function openBook(id) {
     const book = finalize(await parseBook(file.data));
     if (meta.series === undefined) meta.series = book.series || null;
     const days = await DB.all('stats').catch(() => []);
+    await loadWords();
     ST.speed = speedOf(days);
     ST.rec = days.find(d => d.id === dayKey()) || emptyDay(dayKey());
     ST.last = Date.now(); ST.pos = null; ST.dirty = false;
@@ -1494,7 +1536,12 @@ reader.addEventListener('click', e => {
   if (String(window.getSelection() || '').trim()) return;
   if (R.ui) { setUI(false); return; }
   const x = e.clientX / window.innerWidth;
-  if (S.mode !== 'paged' || (x >= 0.3 && x <= 0.7)) { const q = quoteAt(e.clientX, e.clientY); if (q) { openQuote(q.id); return; } }
+  if (S.mode !== 'paged' || (x >= 0.3 && x <= 0.7)) {
+    const w = wordAt(e.clientX, e.clientY);
+    if (w) { showDict(w.form, false, { ch: w.ch, off: w.off, len: w.len }); return; }
+    const q = quoteAt(e.clientX, e.clientY);
+    if (q) { openQuote(q.id); return; }
+  }
   if (S.mode === 'paged' && x < 0.3) prev();
   else if (S.mode === 'paged' && x > 0.7) next();
   else setUI(true);
@@ -1676,7 +1723,7 @@ $('#selBar').addEventListener('click', async e => {
   if (!b || !sel) return;
   hideSel();
   if (b.dataset.sel === 'copy') { toast(await copyText(sel.text) ? 'Скопировано' : 'Не удалось скопировать'); return; }
-  if (b.dataset.sel === 'dict') { showDict(sel.word); return; }
+  if (b.dataset.sel === 'dict') { showDict(sel.word, false, sel); return; }
   const q = addQuote(sel);
   if (b.dataset.sel === 'note') openQuote(q.id, { note: true });
   else toast('Цитата сохранена');
@@ -1690,22 +1737,36 @@ function addQuote(sel) {
   paintQuotes();
   return q;
 }
+/* Quotes get a marker highlight, saved words a dotted underline */
 function paintQuotes() {
   if (!(window.CSS && CSS.highlights && window.Highlight)) return;
-  if (!R.book || !R.meta) { CSS.highlights.delete('polka-quote'); return; }
-  const h = new Highlight();
+  if (!R.book || !R.meta) { CSS.highlights.delete('polka-quote'); CSS.highlights.delete('polka-word'); return; }
+  const h = new Highlight(), hw = new Highlight();
   for (const q of R.meta.quotes || []) if (q.ch === R.ch) { const r = offsetRange(q.off, q.len); if (r) h.add(r); }
+  for (const w of wordsHere()) { const r = offsetRange(w.off, w.len); if (r) hw.add(r); }
   CSS.highlights.set('polka-quote', h);
+  CSS.highlights.set('polka-word', hw);
+}
+const wordsHere = () => (WL || []).filter(w => R.meta && w.bookId === R.meta.id && w.ch === R.ch && w.off != null);
+/* Character offset in the current chapter under a screen point, or -1 */
+function offsetAt(x, y) {
+  let node = null, o = 0;
+  if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; o = p.offset; } }
+  else if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; o = r.startOffset; } }
+  if (!node || node.nodeType !== 3 || !flow.contains(node)) return -1;
+  return pointOffset(node, o);
 }
 function quoteAt(x, y) {
   const qs = ((R.meta && R.meta.quotes) || []).filter(q => q.ch === R.ch);
   if (!qs.length) return null;
-  let node = null, o = 0;
-  if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; o = p.offset; } }
-  else if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; o = r.startOffset; } }
-  if (!node || node.nodeType !== 3 || !flow.contains(node)) return null;
-  const off = pointOffset(node, o);
+  const off = offsetAt(x, y);
   return qs.find(q => off >= q.off && off < q.off + q.len) || null;
+}
+function wordAt(x, y) {
+  const ws = wordsHere();
+  if (!ws.length) return null;
+  const off = offsetAt(x, y);
+  return ws.find(w => off >= w.off && off < w.off + w.len) || null;
 }
 let qCur = null, qT = 0;
 function openQuote(id, opts = {}) {
@@ -1861,6 +1922,28 @@ function parseWikt(html) {
   }
   return out;
 }
+/* Pages of word forms (дому, стоял) only say «форма … слова <lemma>»: returns { lemma, note } */
+function formOf(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  for (const li of doc.querySelectorAll('li')) {
+    if (!/^форма\s/i.test(li.textContent.trim())) continue;
+    const a = [...li.querySelectorAll('a[href^="/wiki/"]')].find(x => !x.getAttribute('href').includes(':'));
+    if (!a) continue;
+    li.querySelectorAll('.example-fullblock').forEach(e => e.remove());
+    return { lemma: safeDecode(a.getAttribute('href').slice(6).split('#')[0]).replace(/_/g, ' '), note: li.textContent.replace(/\s+/g, ' ').trim() };
+  }
+  return null;
+}
+async function lookupArticle(word) {
+  const p = await lookupWord(word);
+  if (!p) return null;
+  const sections = parseWikt(p.html);
+  if (!sections.length) {
+    const f = formOf(p.html), q = f && await wiktPage(f.lemma);
+    if (q) { const s2 = parseWikt(q.html); if (s2.length) return { title: q.title, sections: s2, note: f.note }; }
+  }
+  return { title: p.title, sections };
+}
 function pickLang(sections, word) {
   const bookLang = LANG_NAMES[((R.book && R.book.lang) || 'ru').slice(0, 2).toLowerCase()];
   for (const want of [bookLang, /[а-яё]/i.test(word) ? 'Русский' : 'Английский']) {
@@ -1869,9 +1952,15 @@ function pickLang(sections, word) {
   }
   return sections.filter(x => x.lang === sections[0].lang);
 }
-async function showDict(word, nested) {
-  if (!nested) dictStack = [];
+/* sel: { ch, off, len } of the word in the open book, when the lookup started from the text */
+let dictCtx = null, dictCur = null;
+async function showDict(word, nested, sel) {
+  if (!nested) {
+    dictStack = [];
+    dictCtx = R.book && R.meta ? { bookId: R.meta.id, bookTitle: R.book.title, ...(sel ? { ch: sel.ch, off: sel.off, len: sel.len, ctx: sentenceAt(sel.ch, sel.off, sel.len) } : {}) } : null;
+  }
   dictStack.push(word);
+  dictCur = null;
   const tok = ++dictTok, body = $('#dictBody');
   $('#dictWord').textContent = word;
   body.innerHTML = '<p class="empty-note">Ищу в Викисловаре…</p>';
@@ -1880,11 +1969,20 @@ async function showDict(word, nested) {
   const back = dictStack.length > 1 ? `<button type="button" class="btn dict-back">← ${esc(dictStack[dictStack.length - 2])}</button>` : '';
   let res;
   try {
-    if (!dictCache.has(word)) dictCache.set(word, lookupWord(word).then(p => p && { title: p.title, sections: parseWikt(p.html) }));
+    if (!dictCache.has(word)) dictCache.set(word, lookupArticle(word));
     res = await dictCache.get(word);
   } catch (e) {
     dictCache.delete(word);
-    if (tok === dictTok) body.innerHTML = back + `<p class="empty-note">${navigator.onLine === false ? 'Для словаря нужен интернет. Подключитесь и попробуйте ещё раз.' : 'Не удалось связаться с Викисловарём. Попробуйте ещё раз.'}</p>`;
+    if (tok !== dictTok) return;
+    // Offline: a saved word still has its definitions
+    const lw = word.toLowerCase(), saved = (await loadWords()).find(w => w.form.toLowerCase() === lw || w.word.toLowerCase() === lw);
+    if (saved) {
+      dictCur = { saved };
+      body.innerHTML = back + `<p class="hint">Нет связи с Викисловарём — показано сохранённое толкование.</p>` + defsHtml(saved.word, saved.form, saved.defs, true) + dictActions(saved);
+      $('#dictFoot').textContent = '';
+      return;
+    }
+    body.innerHTML = back + `<p class="empty-note">${navigator.onLine === false ? 'Для словаря нужен интернет. Подключитесь и попробуйте ещё раз.' : 'Не удалось связаться с Викисловарём. Попробуйте ещё раз.'}</p>`;
     return;
   }
   if (tok !== dictTok) return;
@@ -1894,16 +1992,38 @@ async function showDict(word, nested) {
     return;
   }
   const secs = pickLang(res.sections, res.title);
-  body.innerHTML = back
-    + (res.title.toLowerCase() !== word.toLowerCase() ? `<p class="hint">Статья «${esc(res.title)}»</p>` : '')
-    + `<p class="dict-lang">${esc(secs[0].lang)}</p>`
-    + secs.map(x => (x.pos ? `<h3 class="dict-pos">${esc(x.pos)}</h3>` : '') + `<ol class="dict-defs">${x.items.map(i => `<li>${i}</li>`).join('')}</ol>`).join('');
+  const ctx = dictStack.length === 1 ? dictCtx : dictCtx && { bookId: dictCtx.bookId, bookTitle: dictCtx.bookTitle };
+  dictCur = { form: word, title: res.title, secs, ctx };
+  body.innerHTML = back + (res.note ? `<p class="hint">${esc(word)} — ${esc(res.note)}</p>` : '') + defsHtml(res.title, word, secs, false) + dictActions(findWord(res.title, secs[0].lang));
   $('#dictFoot').innerHTML = `<a href="${WIKT}/wiki/${encodeURIComponent(res.title)}" target="_blank" rel="noopener">Открыть статью в Викисловаре</a>. Тексты Викисловаря доступны по лицензии CC BY-SA.`;
 }
-$('#dictBody').addEventListener('click', e => {
+function defsHtml(title, form, secs, plain) {
+  if (!secs.length) return '';
+  return (title.toLowerCase() !== form.toLowerCase() ? `<p class="hint">Статья «${esc(title)}»</p>` : '')
+    + `<p class="dict-lang">${esc(secs[0].lang)}</p>`
+    + secs.map(x => (x.pos ? `<h3 class="dict-pos">${esc(x.pos)}</h3>` : '') + `<ol class="dict-defs">${x.items.map(i => `<li>${plain ? esc(i) : i}</li>`).join('')}</ol>`).join('');
+}
+const dictActions = saved => `<div class="sheet-actions">${saved
+  ? `<button class="btn" type="button" id="dictSave" data-id="${esc(saved.id)}">Сохранено ✓ · убрать</button>`
+  : `<button class="btn primary" type="button" id="dictSave">Сохранить слово</button>`}<button class="btn" type="button" id="dictWords">Мои слова</button></div>`;
+$('#dictBody').addEventListener('click', async e => {
   const l = e.target.closest('.dict-link');
   if (l) { showDict(l.dataset.word, true); return; }
-  if (e.target.closest('.dict-back')) { dictStack.pop(); showDict(dictStack.pop(), true); }
+  if (e.target.closest('.dict-back')) { dictStack.pop(); showDict(dictStack.pop(), true); return; }
+  if (e.target.closest('#dictWords')) { openWords(R.meta ? R.meta.id : ''); return; }
+  const sv = e.target.closest('#dictSave');
+  if (!sv) return;
+  if (sv.dataset.id) {
+    if (!armed(sv, 'Нажмите ещё раз, чтобы убрать')) return;
+    await deleteWord(sv.dataset.id);
+    sv.outerHTML = dictCur && dictCur.secs ? '<button class="btn primary" type="button" id="dictSave">Сохранить слово</button>' : '';
+    toast('Слово убрано из словарика');
+    return;
+  }
+  if (!dictCur || !dictCur.secs) return;
+  const w = await saveWord(dictCur);
+  sv.outerHTML = `<button class="btn" type="button" id="dictSave" data-id="${esc(w.id)}">Сохранено ✓ · убрать</button>`;
+  toast('Слово сохранено');
 });
 
 /* Search */
@@ -1956,11 +2076,11 @@ $('#findBtn').onclick = openSearch;
 
 /* Sheets */
 const scrim = $('#scrim');
-function openSheet(id) {
+function openSheet(id, focus = '.sheet-close') {
   closeSheets(true);
   const s = document.getElementById(id);
   s.classList.add('on'); scrim.classList.add('on');
-  setTimeout(() => { const c = s.querySelector('.sheet-close'); if (c) c.focus({ preventScroll: true }); }, 50);
+  setTimeout(() => { const c = s.querySelector(focus); if (c) c.focus({ preventScroll: true }); }, 50);
 }
 function closeSheets(keepScrim) {
   flushNote();
@@ -2035,6 +2155,198 @@ $('#setSheet').addEventListener('click', async e => {
   }
 });
 
+/* ================= Vocabulary ================= */
+// Word: { id, form (as in the text), word (article title), lang, defs: [{ lang, pos, items: [plain text] }],
+//         ctx (sentence), bookId, bookTitle, ch, off, len, created, edited, due, ivl (days), ease, reps, lapses }
+const DAY = 864e5, REVIEW_LIMIT = 20;
+let WL = null, wFilter = '', wShown = [];
+async function loadWords() { if (!WL) WL = await DB.all('words').catch(() => []); return WL; }
+const findWord = (title, lang) => (WL || []).find(w => w.word.toLowerCase() === title.toLowerCase() && w.lang === lang) || null;
+const plainText = html => { const t = document.createElement('template'); t.innerHTML = html; return t.content.textContent.replace(/\s+/g, ' ').trim(); };
+/* The sentence around a span of the chapter text, at most ~250 characters each way */
+function sentenceAt(ch, off, len) {
+  const t = chapterText(ch), stop = /[.!?…]/;
+  let a = off, b = off + len;
+  for (let k = 0; a > 0 && k < 250; k++, a--) if (stop.test(t[a - 1]) && /[\s«"A-ZА-ЯЁ]/.test(t[a] || ' ')) break;
+  for (let k = 0; b < t.length && k < 250; k++, b++) if (stop.test(t[b])) { b++; break; }
+  return tidy(t.slice(a, b)).trim();
+}
+function markForm(ctx, form, tag = 'mark') {
+  const i = ctx.toLowerCase().indexOf(form.toLowerCase());
+  return i < 0 ? esc(ctx) : esc(ctx.slice(0, i)) + `<${tag}>${esc(ctx.slice(i, i + form.length))}</${tag}>` + esc(ctx.slice(i + form.length));
+}
+async function saveWord(cur) {
+  await loadWords();
+  let left = 3;
+  const defs = cur.secs.map(x => {
+    const items = x.items.slice(0, left).map(plainText).filter(Boolean);
+    left -= items.length;
+    return { lang: x.lang, pos: x.pos, items };
+  }).filter(x => x.items.length);
+  const c = cur.ctx || {}, now = Date.now();
+  const w = { id: 'w' + now.toString(36) + Math.random().toString(36).slice(2, 5), form: cur.form, word: cur.title, lang: cur.secs[0].lang, defs,
+    ctx: c.ctx || '', bookId: c.bookId || null, bookTitle: c.bookTitle || '', ch: c.ch ?? null, off: c.off ?? null, len: c.len ?? null,
+    created: now, edited: now, due: now, ivl: 0, ease: 2.5, reps: 0, lapses: 0 };
+  WL.push(w);
+  await DB.put('words', w).catch(e => toast('Не удалось сохранить слово: ' + e.message, 5000));
+  paintQuotes();
+  return w;
+}
+async function deleteWord(id) {
+  await loadWords();
+  WL = WL.filter(w => w.id !== id);
+  await DB.del('words', id).catch(() => {});
+  paintQuotes();
+}
+function dueText(w) {
+  if (!w.reps) return 'новое';
+  const d = Math.ceil((w.due - Date.now()) / DAY);
+  return d <= 0 ? 'пора повторить' : d === 1 ? 'повтор завтра' : `повтор через ${d} дн.`;
+}
+
+/* Word list */
+async function openWords(bookId) {
+  wFilter = bookId || '';
+  $('#wFind').value = '';
+  await renderWords();
+  openSheet('wordsSheet');
+}
+async function renderWords() {
+  const all = await loadWords(), books = new Map();
+  all.forEach(w => { if (w.bookId) books.set(w.bookId, w.bookTitle || 'Без названия'); });
+  if (wFilter && !books.has(wFilter)) wFilter = '';
+  const sel = $('#wBook');
+  sel.hidden = books.size < 2 && !wFilter;
+  sel.innerHTML = '<option value="">Все книги</option>' + [...books].sort((a, b) => coll.compare(a[1], b[1])).map(([id, t]) => `<option value="${esc(id)}">${esc(t)}</option>`).join('');
+  sel.value = wFilter;
+  const q = norm($('#wFind').value.trim());
+  wShown = all.filter(w => !wFilter || w.bookId === wFilter)
+    .filter(w => !q || norm([w.form, w.word, ...w.defs.flatMap(d => d.items)].join(' ')).includes(q))
+    .sort((a, b) => b.created - a.created);
+  const due = wShown.filter(w => w.due <= Date.now()).length;
+  $('#wReview').textContent = due ? `Повторить · ${Math.min(due, REVIEW_LIMIT)}${due > REVIEW_LIMIT ? ` из ${due}` : ''}` : 'Повторять пока нечего';
+  $('#wReview').disabled = !due;
+  $('#wExport').disabled = !wShown.length;
+  $('#wTools').hidden = !all.length;
+  const list = $('#wList');
+  if (!all.length) { list.innerHTML = '<li><p class="empty-note">Словарик пуст. Выделите слово в книге, нажмите «Словарь», затем «Сохранить слово». Сохранённые слова подчёркиваются в тексте, их можно повторять по карточкам.</p></li>'; return; }
+  if (!wShown.length) { list.innerHTML = '<li><p class="empty-note">Ничего не найдено.</p></li>'; return; }
+  list.innerHTML = wShown.map(w => `<li class="bm"><button type="button" class="bm-go w-go" data-id="${esc(w.id)}"${w.bookId && w.off != null ? '' : ' disabled'}>
+      <span class="w-head"><b>${esc(w.word)}</b>${w.form.toLowerCase() !== w.word.toLowerCase() ? ` <span class="w-form">${esc(w.form)}</span>` : ''}</span>
+      <span class="w-def">${esc((w.defs[0] || { items: [''] }).items[0])}</span>
+      ${w.ctx ? `<span class="w-ctx">${markForm(w.ctx, w.form)}</span>` : ''}
+      <span class="bm-meta">${esc([wFilter ? '' : w.bookTitle, dueText(w)].filter(Boolean).join(' · '))}</span></button>
+      <button type="button" class="icon-btn bm-del" data-del="${esc(w.id)}" aria-label="Удалить слово «${esc(w.word)}»">×</button></li>`).join('');
+}
+let wT;
+$('#wFind').addEventListener('input', () => { clearTimeout(wT); wT = setTimeout(renderWords, 150); });
+$('#wBook').onchange = () => { wFilter = $('#wBook').value; renderWords(); };
+$('#wList').addEventListener('click', async e => {
+  const del = e.target.closest('.bm-del');
+  if (del) {
+    if (!armed(del, 'Удалить?')) return;
+    await deleteWord(del.dataset.del); renderWords(); renderLibrary();
+    return;
+  }
+  const go = e.target.closest('.w-go');
+  const w = go && WL.find(x => x.id === go.dataset.id);
+  if (w) goWord(w);
+});
+async function goWord(w) {
+  const m = await DB.get('meta', w.bookId).catch(() => null);
+  if (!m) { toast('Этой книги больше нет на полке'); return; }
+  closeSheets();
+  if (!R.book || !R.meta || R.meta.id !== w.bookId) await openBook(w.bookId);
+  if (!R.book) return;
+  setUI(false);
+  renderChapter(w.ch, { off: w.off, len: w.len, mark: true });
+}
+function exportWords() {
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const back = w => w.defs.map(d => (d.pos ? `<i>${esc(d.pos)}</i><br>` : '') + d.items.map((t, i) => `${i + 1}. ${esc(t)}`).join('<br>')).join('<br>');
+  const rows = wShown.map(w => [esc(w.word), back(w), w.ctx ? markForm(w.ctx, w.form, 'b') : '', esc(w.bookTitle || '')].map(q).join(','));
+  const csv = '#separator:comma\n#html:true\n#columns:Слово,Толкование,Контекст,Книга\n' + rows.join('\n') + '\n';
+  const book = wFilter && $('#wBook').selectedOptions[0];
+  download(new Blob([csv], { type: 'text/csv;charset=utf-8' }), `Полка — слова${book ? ' — ' + fileName(book.textContent) : ''}.csv`);
+}
+$('#wExport').onclick = exportWords;
+$('#wReview').onclick = startReview;
+$('#wordsBtn').onclick = () => openWords('');
+
+/* Spaced repetition: «помню» grows the interval (1, 3, 8, 20… days), «не помню» resets it and repeats the card later in the session */
+const RV = { queue: [], cur: null, shown: false, done: 0, again: new Map() };
+function grade(w, ok) {
+  const now = Date.now();
+  w.reps = (w.reps || 0) + 1;
+  w.ease = w.ease || 2.5;
+  if (ok) {
+    w.ivl = w.ivl ? Math.max(w.ivl + 1, Math.round(w.ivl * w.ease)) : 1;
+    const d = new Date(now); d.setHours(4, 0, 0, 0); d.setDate(d.getDate() + w.ivl);
+    w.due = d.getTime();
+  } else {
+    w.lapses = (w.lapses || 0) + 1;
+    w.ease = Math.max(1.3, w.ease - 0.2);
+    w.ivl = 0;
+    w.due = now + 10 * 60000;
+  }
+  w.edited = now;
+  DB.put('words', w).catch(e => toast('Не удалось сохранить: ' + e.message, 5000));
+}
+function startReview() {
+  const now = Date.now();
+  RV.queue = wShown.filter(w => w.due <= now).sort((a, b) => a.due - b.due).slice(0, REVIEW_LIMIT);
+  RV.done = 0; RV.again = new Map();
+  if (!RV.queue.length) return;
+  nextCard();
+  openSheet('reviewSheet', '#rvActions .primary');
+}
+function nextCard() {
+  RV.cur = RV.queue.shift() || null;
+  RV.shown = false;
+  if (!RV.cur) return finishReview();
+  renderCard();
+}
+function renderCard() {
+  const w = RV.cur;
+  $('#rvBody').innerHTML = `<div class="card">
+      <div class="card-word">${esc(w.word)}</div>
+      ${w.ctx ? `<div class="card-ctx">${markForm(w.ctx, w.form)}</div>` : ''}
+      ${RV.shown ? `<div class="card-back">${defsHtml(w.word, w.word, w.defs, true)}</div>` : ''}
+    </div>
+    <div class="sheet-actions" id="rvActions">${RV.shown
+      ? '<button class="btn" type="button" data-rv="0">Не помню</button><button class="btn primary" type="button" data-rv="1">Помню</button>'
+      : '<button class="btn primary wide" type="button" data-rv="show">Показать ответ</button>'}</div>
+    <p class="hint">Осталось карточек: ${RV.queue.length + 1}. Клавиши: пробел — нажать кнопку, 1 — не помню, 2 — помню.</p>`;
+  const b = $('#rvActions .primary'); if (b) b.focus({ preventScroll: true });
+}
+function answer(ok) {
+  const w = RV.cur; if (!w) return;
+  grade(w, ok);
+  RV.done++;
+  if (!ok && (RV.again.get(w.id) || 0) < 2) { RV.again.set(w.id, (RV.again.get(w.id) || 0) + 1); RV.queue.push(w); }
+  nextCard();
+}
+function finishReview() {
+  const end = new Date(); end.setHours(0, 0, 0, 0); end.setDate(end.getDate() + 2);
+  const tomorrow = wShown.filter(w => w.due < end.getTime() && w.due > Date.now()).length;
+  $('#rvBody').innerHTML = `<div class="card"><div class="card-word">Готово</div>
+      <p class="sheet-text">Ответов: ${RV.done}. ${tomorrow ? `К повторению до конца завтрашнего дня: ${tomorrow}.` : 'Следующие повторения — позже.'}</p></div>
+    <div class="sheet-actions"><button class="btn primary wide" type="button" data-rv="close">К списку слов</button></div>`;
+  $('#rvBody .primary').focus({ preventScroll: true });
+  renderLibrary();
+}
+$('#rvBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-rv]'); if (!b) return;
+  const v = b.dataset.rv;
+  if (v === 'show') { RV.shown = true; renderCard(); }
+  else if (v === 'close') { renderWords().then(() => openSheet('wordsSheet')); }
+  else answer(v === '1');
+});
+document.addEventListener('keydown', e => {
+  if (!$('#reviewSheet').classList.contains('on') || !RV.cur || !RV.shown) return;
+  if (e.key === '1' || e.key === '2') { e.preventDefault(); answer(e.key === '2'); }
+});
+
 /* ================= Statistics ================= */
 const pagesOf = chars => Math.round(chars / PAGE_CHARS);
 const dayLabel = id => new Date(id + 'T12:00').toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
@@ -2101,8 +2413,8 @@ async function exportBackup(withFiles) {
   if (!metas.length) { toast('Полка пуста — сохранять нечего'); return; }
   toast('Готовлю резервную копию…', 60000);
   const zip = new JSZip();
-  const stats = await DB.all('stats').catch(() => []);
-  zip.file('polka-backup.json', JSON.stringify({ app: 'polka', backup: 1, created: Date.now(), settings: S, library: { sort: L.sort, filter: L.filter, tag: L.tag }, books: metas, stats }));
+  const stats = await DB.all('stats').catch(() => []), words = await DB.all('words').catch(() => []);
+  zip.file('polka-backup.json', JSON.stringify({ app: 'polka', backup: 1, created: Date.now(), settings: S, library: { sort: L.sort, filter: L.filter, tag: L.tag }, books: metas, stats, words }));
   if (withFiles) for (const m of metas) {
     const f = await DB.get('files', m.id);
     if (f) zip.file('books/' + m.id, f.data, { compression: m.format === 'epub' || /\.zip$/i.test(m.name || '') ? 'STORE' : 'DEFLATE' });
@@ -2160,6 +2472,14 @@ async function importBackup(file) {
       Object.entries(d.books || {}).forEach(([id, ms]) => books[id] = Math.max(books[id] || 0, ms));
       await DB.put('stats', { id: d.id, ms: Math.max(cur.ms, d.ms || 0), chars: Math.max(cur.chars, d.chars || 0), books });
     }
+    // Words: union by id, the later edit (review progress included) wins
+    const curWords = new Map((await DB.all('words').catch(() => [])).map(w => [w.id, w]));
+    for (const w of Array.isArray(data.words) ? data.words : []) {
+      if (!w || !w.id || typeof w.word !== 'string' || typeof w.form !== 'string' || !Array.isArray(w.defs) || !w.defs.every(d => d && Array.isArray(d.items))) continue;
+      const cur = curWords.get(w.id);
+      if (!cur || (w.edited || 0) > (cur.edited || 0)) await DB.put('words', w);
+    }
+    WL = null;
   } catch (e) { console.error(e); toast('Восстановление прервалось: ' + e.message, 6000); renderLibrary(); return; }
   if (data.settings) { for (const k in DEFAULTS) if (k in data.settings) S[k] = data.settings[k]; applySettings(); }
   if (data.library) { if (SORTS[data.library.sort]) L.sort = data.library.sort; if (data.library.filter) L.filter = data.library.filter; if (data.library.tag) L.tag = data.library.tag; saveLib(); }
