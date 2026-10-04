@@ -86,10 +86,17 @@ body{margin:0; min-height:100%; background:var(--bg); color:var(--ink); font-fam
 .prog{height:2px; background:var(--rule); margin-top:8px; border-radius:2px; overflow:hidden}
 .prog i{display:block; height:100%; background:var(--accent)}
 .pct{font-size:12px; color:var(--muted); margin-top:4px; font-variant-numeric:tabular-nums}
-.del{position:absolute; top:6px; right:6px; min-width:30px; height:30px; padding:0 9px; border-radius:15px; border:0; background:rgba(0,0,0,.6); color:#fff; font:inherit; font-size:13px; cursor:pointer; opacity:0}
-.book-wrap:hover .del, .del:focus-visible, .del.armed{opacity:1}
-.del.armed{background:#A3322B}
-@media (hover:none){ .del{opacity:.85} }
+.more{position:absolute; top:6px; right:6px; width:34px; height:30px; border-radius:15px; border:0; background:rgba(0,0,0,.6); color:#fff; font:inherit; font-size:18px; line-height:1; cursor:pointer; opacity:0}
+.book-wrap:hover .more, .more:focus-visible{opacity:1}
+@media (hover:none){ .more{opacity:.85} }
+.lib-actions{display:flex; flex-wrap:wrap; gap:8px}
+.lib-tools{display:flex; flex-wrap:wrap; gap:10px; margin:0 0 28px}
+.lib-tools input,.lib-tools select{font:inherit; font-size:15px; min-height:44px; border:1px solid var(--rule); border-radius:8px; background:var(--surface); color:var(--ink)}
+.lib-tools input{flex:1 1 240px; min-width:0; padding:9px 12px}
+.lib-tools select{flex:0 1 auto; padding:0 10px}
+.lib-tools .seg{flex:1 1 100%}
+.lib-tools .seg button{background:var(--surface)}
+.seg button .n{color:var(--muted); font-weight:400; margin-left:4px; font-variant-numeric:tabular-nums}
 .dropveil{position:fixed; inset:0; z-index:50; display:none; place-items:center; background:color-mix(in srgb, var(--bg) 88%, transparent); font-family:var(--serif); font-size:28px; border:3px dashed var(--accent)}
 body.dragging .dropveil{display:grid}
 
@@ -202,7 +209,7 @@ body.dragging .dropveil{display:grid}
 .ribbon.on{display:block}
 #bmBtn.on svg{fill:currentColor}
 .sheet-tabs{flex:1; flex-wrap:nowrap}
-.sheet-tabs button{flex:1}
+.sheet-tabs button{flex:1; padding:6px 4px; white-space:nowrap; font-size:13.5px}
 .bm-list,.find-list{list-style:none; margin:0; padding:0}
 .bm{display:flex; align-items:flex-start; gap:4px; border-bottom:1px solid var(--rule)}
 .bm-go,.find-item{flex:1; min-width:0; display:block; text-align:left; background:none; border:0; color:var(--ink); font:inherit; padding:12px 0; cursor:pointer}
@@ -217,9 +224,46 @@ body.dragging .dropveil{display:grid}
 .find-item{border-bottom:1px solid var(--rule)}
 .find-snip mark,#flow mark.find{background:color-mix(in srgb, var(--accent) 28%, transparent); color:inherit; border-radius:2px}
 ::highlight(polka-find){background-color:color-mix(in srgb, var(--accent) 32%, transparent)}
+::highlight(polka-quote){background-color:color-mix(in srgb, #E2B53A 40%, transparent)}
+:root[data-theme="eink"] ::highlight(polka-quote){background-color:#D6D6D6}
 :root[data-theme="eink"] .find-snip mark,:root[data-theme="eink"] #flow mark.find{background:#000; color:#fff}
 :root[data-theme="eink"] ::highlight(polka-find){background-color:#000; color:#fff}
 .lib-foot{margin-top:48px; color:var(--muted); font-size:13px}
+
+/* ---------- Quotes ---------- */
+.selbar{position:absolute; left:50%; bottom:calc(44px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:6; display:flex; background:var(--ink); color:var(--bg); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; white-space:nowrap}
+.selbar button{font:inherit; font-size:14px; font-weight:500; color:inherit; background:none; border:0; padding:0 15px; min-height:44px; cursor:pointer}
+.selbar button+button{border-left:1px solid color-mix(in srgb, var(--bg) 30%, transparent)}
+.q-quote{border-left:3px solid #E2B53A; padding-left:10px}
+:root[data-theme="eink"] .q-quote{border-left-color:#000}
+.q-note{display:block; font-size:14px; line-height:1.4; margin-top:6px; white-space:pre-wrap; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden}
+.bm-edit{margin-top:4px; color:var(--muted)}
+.q-tools{display:flex; flex-wrap:wrap; gap:8px; padding:12px 0; border-bottom:1px solid var(--rule)}
+.q-tools .btn{flex:1 1 auto; font-size:14px}
+#qText{margin:14px 0 6px; font-family:var(--rfont); font-size:17px; line-height:1.5}
+#qMeta{font-size:12px; color:var(--muted); margin-bottom:16px}
+#qNote{display:block; width:100%; font:inherit; font-size:16px; line-height:1.45; padding:10px 12px; border:1px solid var(--rule); border-radius:8px; background:var(--bg); color:var(--ink); resize:vertical; min-height:96px}
+.sheet-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:16px}
+.sheet-actions .btn{flex:1 1 auto}
+.btn.danger{color:#A3322B}
+.btn.danger.armed{background:#A3322B; border-color:#A3322B; color:#fff}
+:root[data-theme="dark"] .btn.danger:not(.armed){color:#E58A80}
+@media (prefers-color-scheme: dark){ :root:not([data-theme]) .btn.danger:not(.armed){color:#E58A80} }
+
+/* ---------- Book card and backup ---------- */
+.bk-head{display:flex; gap:16px; padding:16px 0 4px}
+.bk-head .cover{flex:none; width:84px; height:auto}
+.bk-t{font-family:var(--serif); font-weight:600; font-size:19px; line-height:1.25}
+.bk-a{color:var(--muted); font-size:14px; margin-top:4px}
+.bk-dl{display:grid; grid-template-columns:auto 1fr; gap:4px 14px; margin:14px 0 0; font-size:14px}
+.bk-dl dt{color:var(--muted)}
+.bk-dl dd{margin:0; font-variant-numeric:tabular-nums}
+.sheet-text{font-size:14px; line-height:1.5; margin:14px 0}
+.hint{font-size:13px; color:var(--muted); margin:6px 0 14px}
+.check{display:flex; align-items:center; gap:10px; font-size:15px; min-height:44px; cursor:pointer}
+.check input{width:20px; height:20px; accent-color:var(--accent); margin:0}
+.btn.wide{width:100%}
+.sec-label{font-size:13px; color:var(--muted); margin:26px 0 0; padding-top:16px; border-top:1px solid var(--rule)}
 .toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:60; background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:8px; font-size:14px; max-width:min(90vw,480px); text-align:center}
 </style>
 </head>
@@ -231,7 +275,10 @@ body.dragging .dropveil{display:grid}
       <h1 class="brand">Полка</h1>
       <p class="brand-sub">Читалка для FB2 и EPUB. Книги хранятся только в этом браузере и никуда не отправляются.</p>
     </div>
-    <button class="btn primary" id="addBtn" type="button">Добавить книги</button>
+    <div class="lib-actions">
+      <button class="btn" id="backupBtn" type="button">Резервная копия</button>
+      <button class="btn primary" id="addBtn" type="button">Добавить книги</button>
+    </div>
   </header>
   <p class="warn" id="memWarn" hidden>Браузер не разрешает сохранять данные, поэтому книги пропадут после закрытия страницы.</p>
   <section class="drop" id="empty" hidden>
@@ -239,9 +286,26 @@ body.dragging .dropveil{display:grid}
     <p>Перетащите сюда файлы FB2, FB2.ZIP или EPUB — или выберите их на устройстве.</p>
     <button class="btn primary" id="addBtn2" type="button">Выбрать файлы</button>
   </section>
+  <div class="lib-tools" id="libTools" hidden>
+    <input type="search" id="libFind" placeholder="Поиск по названию или автору" aria-label="Поиск по полке" autocomplete="off">
+    <select id="libSort" aria-label="Порядок книг">
+      <option value="recent">Недавно открытые</option>
+      <option value="added">Недавно добавленные</option>
+      <option value="title">По названию</option>
+      <option value="author">По автору</option>
+      <option value="progress">По прогрессу</option>
+    </select>
+    <div class="seg" id="libFilter" role="group" aria-label="Какие книги показывать">
+      <button type="button" data-filter="all">Все</button>
+      <button type="button" data-filter="reading">Читаю</button>
+      <button type="button" data-filter="new">Не начаты</button>
+      <button type="button" data-filter="done">Прочитаны</button>
+    </div>
+  </div>
+  <p class="empty-note" id="libNone" hidden>Подходящих книг нет.</p>
   <div class="shelf" id="shelf"></div>
   <input type="file" id="fileInput" multiple hidden>
-  <p class="lib-foot">Версия 0.2: закладки и поиск по книге. Работает офлайн после первого открытия.</p>
+  <p class="lib-foot">Версия 0.3: цитаты и заметки, сортировка и поиск по полке, резервная копия. Работает офлайн после первого открытия.</p>
 </main>
 
 <div id="reader" class="paged" aria-hidden="true">
@@ -269,6 +333,11 @@ body.dragging .dropveil{display:grid}
   </div>
   <div class="runfoot"><span id="runPage"></span><span id="runPct"></span></div>
   <button class="btn back-pill" id="backPill" type="button" hidden>Вернуться назад</button>
+  <div class="selbar" id="selBar" role="toolbar" aria-label="Действия с выделенным текстом" hidden>
+    <button type="button" data-sel="quote">Цитата</button>
+    <button type="button" data-sel="note">Заметка</button>
+    <button type="button" data-sel="copy">Копировать</button>
+  </div>
   <div class="bar bottom">
     <div class="seek-row"><span id="seekLabel"></span><span id="seekPct"></span></div>
     <input type="range" id="seek" min="0" max="1000" step="1" aria-label="Позиция в книге">
@@ -281,9 +350,52 @@ body.dragging .dropveil{display:grid}
 
 <div class="scrim" id="scrim"></div>
 
-<aside class="sheet" id="tocSheet" aria-label="Оглавление и закладки">
-  <div class="sheet-head"><div class="seg sheet-tabs"><button type="button" data-tab="toc">Оглавление</button><button type="button" data-tab="bm" id="bmTab">Закладки</button></div><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
-  <div class="sheet-body"><ol class="toc" id="tocList"></ol><ul class="bm-list" id="bmList" hidden></ul></div>
+<aside class="sheet" id="tocSheet" aria-label="Оглавление, закладки и цитаты">
+  <div class="sheet-head"><div class="seg sheet-tabs"><button type="button" data-tab="toc">Оглавление</button><button type="button" data-tab="bm" id="bmTab">Закладки</button><button type="button" data-tab="qt" id="qtTab">Цитаты</button></div><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="sheet-body"><ol class="toc" id="tocList"></ol><ul class="bm-list" id="bmList" hidden></ul><ul class="bm-list" id="qtList" hidden></ul></div>
+</aside>
+
+<aside class="sheet" id="quoteSheet" aria-label="Цитата">
+  <div class="sheet-head"><h2>Цитата</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="sheet-body">
+    <div class="q-quote" id="qText"></div>
+    <div id="qMeta"></div>
+    <label class="row-label" for="qNote" style="display:block">Заметка</label>
+    <textarea id="qNote" rows="4" placeholder="Ваша мысль об этом отрывке"></textarea>
+    <div class="sheet-actions">
+      <button class="btn primary" type="button" id="qDone">Готово</button>
+      <button class="btn" type="button" id="qGo">Перейти к месту</button>
+      <button class="btn" type="button" id="qCopy">Копировать</button>
+      <button class="btn danger" type="button" id="qDel">Удалить цитату</button>
+    </div>
+  </div>
+</aside>
+
+<aside class="sheet" id="bookSheet" aria-label="О книге">
+  <div class="sheet-head"><h2>О книге</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="sheet-body">
+    <div id="bkInfo"></div>
+    <div class="sheet-actions">
+      <button class="btn primary" type="button" id="bkRead">Читать</button>
+      <button class="btn" type="button" id="bkDone">Отметить прочитанной</button>
+      <button class="btn" type="button" id="bkQuotes">Сохранить цитаты в файл</button>
+      <button class="btn danger" type="button" id="bkDel">Удалить с полки</button>
+    </div>
+  </div>
+</aside>
+
+<aside class="sheet" id="backupSheet" aria-label="Резервная копия">
+  <div class="sheet-head"><h2>Резервная копия</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="sheet-body">
+    <p class="sheet-text">Копия — один файл .zip: книги, место чтения, закладки, цитаты и настройки. Сохраните её, чтобы перенести полку на другое устройство или не потерять при очистке браузера.</p>
+    <label class="check"><input type="checkbox" id="bkpFiles" checked> Включить файлы книг</label>
+    <p class="hint">Без файлов копия весит мало, но восстановить из неё можно только книги, которые уже есть на полке.</p>
+    <button class="btn primary wide" type="button" id="bkpSave">Сохранить копию</button>
+    <div class="sec-label">Восстановление</div>
+    <p class="sheet-text">Новые книги из копии добавятся на полку. У книг, которые уже есть, объединятся закладки и цитаты, а место чтения возьмётся более свежее. Настройки текста заменятся настройками из копии.</p>
+    <button class="btn wide" type="button" id="bkpLoad">Восстановить из копии</button>
+    <input type="file" id="bkpInput" accept=".zip,application/zip" hidden>
+  </div>
 </aside>
 
 <aside class="sheet" id="findSheet" aria-label="Поиск по книге">
@@ -780,27 +892,69 @@ function coverHtml(m) {
   if (m.cover) return `<img src="${m.cover}" alt="">`;
   return `<div class="gen" style="background:${PALETTE[hash(m.title) % PALETTE.length]}"><div class="gt">${esc(m.title)}</div><div class="ga">${esc((m.authors || []).join(', '))}</div></div>`;
 }
+/* Done is either set by hand (m.done) or reached by reading to the end */
+const isDone = m => m.done === true || (m.done !== false && (m.progress || 0) >= 0.995);
+const stateOf = m => isDone(m) ? 'done' : (m.progress || 0) > 0 ? 'reading' : 'new';
+const authorsOf = m => (m.authors || []).join(', ');
+const coll = new Intl.Collator('ru', { sensitivity: 'base', numeric: true });
+const surname = m => { const a = (m.authors || [])[0]; return a ? a.trim().split(/\s+/).pop() : '￿'; };
+const SORTS = {
+  recent: (a, b) => (b.opened || b.added) - (a.opened || a.added),
+  added: (a, b) => b.added - a.added,
+  title: (a, b) => coll.compare(a.title, b.title),
+  author: (a, b) => coll.compare(surname(a), surname(b)) || coll.compare(authorsOf(a), authorsOf(b)) || coll.compare(a.title, b.title),
+  progress: (a, b) => (isDone(a) - isDone(b)) || (b.progress || 0) - (a.progress || 0)
+};
+const L = { q: '', sort: 'recent', filter: 'all' };
+try { const v = JSON.parse(localStorage.getItem('polka-library') || '{}'); if (SORTS[v.sort]) L.sort = v.sort; if (v.filter) L.filter = v.filter; } catch (e) {}
+function saveLib() { try { localStorage.setItem('polka-library', JSON.stringify({ sort: L.sort, filter: L.filter })); } catch (e) {} }
+const fmtSize = n => n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' КБ' : (n / 1048576).toFixed(1).replace('.', ',') + ' МБ';
+const fmtDay = t => new Date(t).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+
 async function renderLibrary() {
   let metas = [];
   try { metas = await DB.all('meta'); } catch (e) { toast('Не удалось прочитать полку: ' + e.message, 5000); }
-  metas.sort((a, b) => (b.opened || b.added) - (a.opened || a.added));
   $('#empty').hidden = metas.length > 0;
-  shelf.innerHTML = metas.map(m => {
-    const p = Math.floor((m.progress || 0) * 100);
+  $('#libTools').hidden = !metas.length;
+  const counts = { all: metas.length, reading: 0, new: 0, done: 0 };
+  metas.forEach(m => counts[stateOf(m)]++);
+  document.querySelectorAll('[data-filter]').forEach(b => {
+    const f = b.dataset.filter;
+    b.innerHTML = `${{ all: 'Все', reading: 'Читаю', new: 'Не начаты', done: 'Прочитаны' }[f]}<span class="n">${counts[f]}</span>`;
+    b.setAttribute('aria-pressed', String(f === L.filter));
+  });
+  $('#libSort').value = L.sort;
+  const q = norm(L.q.trim());
+  const shown = metas
+    .filter(m => L.filter === 'all' || stateOf(m) === L.filter)
+    .filter(m => !q || norm(m.title + ' ' + authorsOf(m)).includes(q))
+    .sort(SORTS[L.sort]);
+  $('#libNone').hidden = !metas.length || shown.length > 0;
+  shelf.innerHTML = shown.map(m => {
+    const done = isDone(m), p = done ? 100 : Math.floor((m.progress || 0) * 100);
     return `<div class="book-wrap">
       <button class="book" type="button" data-id="${esc(m.id)}">
         <div class="cover">${coverHtml(m)}</div>
-        <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc((m.authors || []).join(', ') || 'Автор не указан')}</div>
-        <div class="prog"><i style="width:${p}%"></i></div><div class="pct">${p ? (p >= 100 ? 'Прочитана' : `Прочитано ${p}%`) : 'Не начата'}</div></div>
+        <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(authorsOf(m) || 'Автор не указан')}</div>
+        <div class="prog"><i style="width:${p}%"></i></div><div class="pct">${done ? 'Прочитана' : p ? `Прочитано ${p}%` : 'Не начата'}</div></div>
       </button>
-      <button class="del" type="button" data-del="${esc(m.id)}" aria-label="Удалить «${esc(m.title)}»">×</button>
+      <button class="more" type="button" data-more="${esc(m.id)}" aria-label="О книге «${esc(m.title)}»">⋯</button>
     </div>`;
   }).join('');
 }
+let libT;
+$('#libFind').addEventListener('input', () => { clearTimeout(libT); libT = setTimeout(() => { L.q = $('#libFind').value; renderLibrary(); }, 150); });
+$('#libSort').onchange = () => { L.sort = $('#libSort').value; saveLib(); renderLibrary(); };
+$('#libFilter').addEventListener('click', e => {
+  const b = e.target.closest('[data-filter]'); if (!b) return;
+  L.filter = b.dataset.filter; saveLib(); renderLibrary();
+});
+
 async function addFiles(files) {
   const existing = await DB.all('meta').catch(() => []);
   let added = 0;
   for (const f of files) {
+    if (/^polka-backup.*\.zip$/i.test(f.name)) { await importBackup(f); continue; }
     if (existing.some(m => m.name === f.name && m.size === f.size)) { toast(`«${f.name}» уже на полке`); continue; }
     try {
       toast(`Добавляю «${f.name}»…`, 10000);
@@ -818,20 +972,60 @@ async function addFiles(files) {
 }
 $('#addBtn').onclick = $('#addBtn2').onclick = () => fileInput.click();
 fileInput.onchange = () => { const fs = [...fileInput.files]; fileInput.value = ''; if (fs.length) addFiles(fs); };
-shelf.addEventListener('click', async e => {
-  const del = e.target.closest('.del');
-  if (del) {
-    if (!del.classList.contains('armed')) {
-      del.classList.add('armed'); del.textContent = 'Удалить?';
-      setTimeout(() => { if (del.isConnected) { del.classList.remove('armed'); del.textContent = '×'; } }, 3000);
-      return;
-    }
-    await DB.del('meta', del.dataset.del); await DB.del('files', del.dataset.del);
-    toast('Книга удалена с полки'); renderLibrary(); return;
-  }
+shelf.addEventListener('click', e => {
+  const more = e.target.closest('.more');
+  if (more) { openBookSheet(more.dataset.more); return; }
   const b = e.target.closest('.book');
   if (b) openBook(b.dataset.id);
 });
+
+/* Two-step confirmation for destructive buttons */
+function armed(btn, label) {
+  if (btn.classList.contains('armed')) return true;
+  const text = btn.textContent;
+  btn.classList.add('armed'); btn.textContent = label;
+  setTimeout(() => { if (btn.classList.contains('armed')) { btn.classList.remove('armed'); btn.textContent = text; } }, 3000);
+  return false;
+}
+function disarm(btn, text) { btn.classList.remove('armed'); btn.textContent = text; }
+
+/* Book card */
+let bkCur = null;
+async function openBookSheet(id) {
+  const m = await DB.get('meta', id).catch(() => null); if (!m) return;
+  bkCur = m;
+  const p = isDone(m) ? 100 : Math.floor((m.progress || 0) * 100);
+  const nb = (m.bookmarks || []).length, nq = (m.quotes || []).length;
+  $('#bkInfo').innerHTML = `<div class="bk-head"><div class="cover">${coverHtml(m)}</div><div>
+      <div class="bk-t">${esc(m.title)}</div><div class="bk-a">${esc(authorsOf(m) || 'Автор не указан')}</div></div></div>
+    <dl class="bk-dl">
+      <dt>Файл</dt><dd>${esc((m.format || '').toUpperCase())}${m.size ? ', ' + fmtSize(m.size) : ''}</dd>
+      <dt>Добавлена</dt><dd>${fmtDay(m.added)}</dd>
+      ${m.opened ? `<dt>Открывалась</dt><dd>${fmtDay(m.opened)}</dd>` : ''}
+      <dt>Прочитано</dt><dd>${isDone(m) ? 'полностью' : p + '%'}</dd>
+      <dt>Закладки</dt><dd>${nb || 'нет'}</dd>
+      <dt>Цитаты</dt><dd>${nq || 'нет'}</dd>
+    </dl>`;
+  $('#bkDone').textContent = isDone(m) ? 'Снять отметку «Прочитана»' : 'Отметить прочитанной';
+  $('#bkQuotes').hidden = !nq;
+  disarm($('#bkDel'), 'Удалить с полки');
+  openSheet('bookSheet');
+}
+$('#bkRead').onclick = () => { if (!bkCur) return; const id = bkCur.id; closeSheets(); openBook(id); };
+$('#bkDone').onclick = async () => {
+  if (!bkCur) return;
+  bkCur.done = !isDone(bkCur);
+  try { await DB.put('meta', bkCur); } catch (e) { toast('Не удалось сохранить: ' + e.message, 5000); return; }
+  toast(bkCur.done ? 'Книга отмечена прочитанной' : 'Отметка снята');
+  renderLibrary(); openBookSheet(bkCur.id);
+};
+$('#bkQuotes').onclick = () => { if (bkCur) saveQuotesFile(bkCur); };
+$('#bkDel').onclick = async e => {
+  if (!bkCur || !armed(e.currentTarget, 'Нажмите ещё раз, чтобы удалить')) return;
+  await DB.del('meta', bkCur.id); await DB.del('files', bkCur.id);
+  bkCur = null; closeSheets();
+  toast('Книга удалена с полки'); renderLibrary();
+};
 let dragDepth = 0;
 const hasFiles = e => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
 document.addEventListener('dragenter', e => { if (hasFiles(e) && !reader.classList.contains('open')) { dragDepth++; document.body.classList.add('dragging'); } });
@@ -918,7 +1112,7 @@ function clearHighlight() {
 function highlight(off, len) {
   clearHighlight();
   const r = offsetRange(off, len); if (!r) return;
-  if (window.CSS && CSS.highlights && window.Highlight) { CSS.highlights.set('polka-find', new Highlight(r)); return; }
+  if (window.CSS && CSS.highlights && window.Highlight) { const h = new Highlight(r); h.priority = 1; CSS.highlights.set('polka-find', h); return; }
   try { const m = document.createElement('mark'); m.className = 'find'; r.surroundContents(m); flow.normalize(); buildNodes(); } catch (e) {}
 }
 
@@ -936,7 +1130,7 @@ async function renderChapter(i, where) {
   await resolveImgs(flow);
   await waitImages(flow);
   if (tok !== R.tok) return;
-  clearHighlight(); buildNodes();
+  clearHighlight(); buildNodes(); paintQuotes();
   layout(); position(where);
   if (where && where.mark) highlight(where.off, where.len);
   flow.style.visibility = '';
@@ -1066,7 +1260,8 @@ function closeReader() {
   clearTimeout(saveT); writePos();
   closeSheets();
   reader.classList.remove('open', 'ui'); reader.setAttribute('aria-hidden', 'true'); library.removeAttribute('aria-hidden');
-  R.book = null; R.meta = null; R.tok++; flow.innerHTML = '';
+  hideSel();
+  R.book = null; R.meta = null; R.tok++; flow.innerHTML = ''; paintQuotes();
   document.title = 'Полка — читалка FB2 и EPUB';
   renderLibrary();
 }
@@ -1117,7 +1312,7 @@ backPill.onclick = () => { const b = R.back; R.back = null; backPill.hidden = tr
 
 /* Input: taps, swipes, wheel, keys */
 reader.addEventListener('click', e => {
-  if (e.target.closest('.bar') || e.target.closest('.back-pill')) return;
+  if (e.target.closest('.bar') || e.target.closest('.back-pill') || e.target.closest('.selbar')) return;
   if (R.swiped) { R.swiped = false; return; }
   const a = e.target.closest('a');
   if (a && flow.contains(a)) { e.preventDefault(); handleLink(a); return; }
@@ -1126,6 +1321,7 @@ reader.addEventListener('click', e => {
   if (String(window.getSelection() || '').trim()) return;
   if (R.ui) { setUI(false); return; }
   const x = e.clientX / window.innerWidth;
+  if (S.mode !== 'paged' || (x >= 0.3 && x <= 0.7)) { const q = quoteAt(e.clientX, e.clientY); if (q) { openQuote(q.id); return; } }
   if (S.mode === 'paged' && x < 0.3) prev();
   else if (S.mode === 'paged' && x > 0.7) next();
   else setUI(true);
@@ -1158,7 +1354,7 @@ viewport.addEventListener('scroll', () => {
   if (!R.raf) R.raf = requestAnimationFrame(() => { R.raf = 0; updateChrome(); savePos(); });
 }, { passive: true });
 document.addEventListener('keydown', e => {
-  if (!reader.classList.contains('open')) return;
+  if (!reader.classList.contains('open')) { if (e.key === 'Escape' && document.querySelector('.sheet.on')) closeSheets(); return; }
   if ((e.ctrlKey || e.metaKey) && (e.key === 'f' || e.key === 'а')) { e.preventDefault(); openSearch(); return; }
   if (document.querySelector('.sheet.on')) { if (e.key === 'Escape') closeSheets(); return; }
   if (e.target.closest && e.target.closest('input, textarea, select')) return;
@@ -1255,11 +1451,168 @@ $('#bmList').addEventListener('click', e => {
   renderChapter(m.ch, { off: m.off });
 });
 function showNavTab(tab) {
-  $('#tocList').hidden = tab !== 'toc'; $('#bmList').hidden = tab !== 'bm';
+  $('#tocList').hidden = tab !== 'toc'; $('#bmList').hidden = tab !== 'bm'; $('#qtList').hidden = tab !== 'qt';
   document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+  const nb = (R.meta.bookmarks || []).length, nq = (R.meta.quotes || []).length;
+  $('#bmTab').textContent = nb ? `Закладки · ${nb}` : 'Закладки';
+  $('#qtTab').textContent = nq ? `Цитаты · ${nq}` : 'Цитаты';
   if (tab === 'bm') renderBookmarks();
+  if (tab === 'qt') renderQuotes();
 }
 document.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => showNavTab(b.dataset.tab));
+
+/* Quotes and notes: { id, ch, off, len, text, note, chTitle, pct, created, edited } in meta.quotes */
+const saveMeta = msg => DB.put('meta', R.meta).catch(e => toast(msg + ': ' + e.message, 5000));
+function pointOffset(node, off) {
+  const r = document.createRange();
+  try { r.setStart(flow, 0); r.setEnd(node, off); } catch (e) { return -1; }
+  return r.toString().length;
+}
+function readSelection() {
+  const s = window.getSelection();
+  if (!R.book || !s || s.isCollapsed || !s.rangeCount) return null;
+  const r = s.getRangeAt(0);
+  if (!flow.contains(r.commonAncestorContainer)) return null;
+  const text = tidy(r.toString()).trim();
+  if (!text) return null;
+  const off = pointOffset(r.startContainer, r.startOffset), end = pointOffset(r.endContainer, r.endOffset);
+  if (off < 0 || end <= off) return null;
+  return { ch: R.ch, off, len: end - off, text };
+}
+function hideSel() {
+  R.sel = null; $('#selBar').hidden = true;
+  const s = window.getSelection(); if (s && !s.isCollapsed && flow.contains(s.anchorNode)) s.removeAllRanges();
+}
+let selT;
+document.addEventListener('selectionchange', () => {
+  clearTimeout(selT);
+  selT = setTimeout(() => {
+    if (R.selHold) return;
+    R.sel = reader.classList.contains('open') ? readSelection() : null;
+    $('#selBar').hidden = !R.sel;
+    if (R.sel && R.ui) setUI(false);
+  }, 150);
+});
+// Keep the selection alive while a toolbar button is being pressed (touch browsers drop it on tap).
+$('#selBar').addEventListener('pointerdown', e => { e.preventDefault(); R.selHold = true; setTimeout(() => R.selHold = false, 600); });
+$('#selBar').addEventListener('click', async e => {
+  const b = e.target.closest('[data-sel]'), sel = R.sel;
+  R.selHold = false;
+  if (!b || !sel) return;
+  hideSel();
+  if (b.dataset.sel === 'copy') { toast(await copyText(sel.text) ? 'Скопировано' : 'Не удалось скопировать'); return; }
+  const q = addQuote(sel);
+  if (b.dataset.sel === 'note') openQuote(q.id, { note: true });
+  else toast('Цитата сохранена');
+});
+function addQuote(sel) {
+  const b = R.book;
+  const q = { id: 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), ch: sel.ch, off: sel.off, len: sel.len, text: sel.text, note: '',
+    chTitle: b.chapters[sel.ch].title || '', pct: Math.min(1, (b.cum[sel.ch] + Math.min(sel.off, b.len[sel.ch])) / b.total), created: Date.now() };
+  (R.meta.quotes = R.meta.quotes || []).push(q);
+  saveMeta('Не удалось сохранить цитату');
+  paintQuotes();
+  return q;
+}
+function paintQuotes() {
+  if (!(window.CSS && CSS.highlights && window.Highlight)) return;
+  if (!R.book || !R.meta) { CSS.highlights.delete('polka-quote'); return; }
+  const h = new Highlight();
+  for (const q of R.meta.quotes || []) if (q.ch === R.ch) { const r = offsetRange(q.off, q.len); if (r) h.add(r); }
+  CSS.highlights.set('polka-quote', h);
+}
+function quoteAt(x, y) {
+  const qs = ((R.meta && R.meta.quotes) || []).filter(q => q.ch === R.ch);
+  if (!qs.length) return null;
+  let node = null, o = 0;
+  if (document.caretPositionFromPoint) { const p = document.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; o = p.offset; } }
+  else if (document.caretRangeFromPoint) { const r = document.caretRangeFromPoint(x, y); if (r) { node = r.startContainer; o = r.startOffset; } }
+  if (!node || node.nodeType !== 3 || !flow.contains(node)) return null;
+  const off = pointOffset(node, o);
+  return qs.find(q => off >= q.off && off < q.off + q.len) || null;
+}
+let qCur = null, qT = 0;
+function openQuote(id, opts = {}) {
+  const q = ((R.meta && R.meta.quotes) || []).find(x => x.id === id); if (!q) return;
+  qCur = q;
+  $('#qText').textContent = q.text;
+  $('#qMeta').textContent = [q.chTitle, Math.floor((q.pct || 0) * 100) + '%', fmtDate(q.created)].filter(Boolean).join(', ');
+  $('#qNote').value = q.note || '';
+  $('#qGo').hidden = !opts.fromList;
+  disarm($('#qDel'), 'Удалить цитату');
+  openSheet('quoteSheet');
+  if (opts.note) setTimeout(() => $('#qNote').focus(), 80);
+}
+function flushNote() {
+  if (!qT) return;
+  clearTimeout(qT); qT = 0;
+  if (R.meta) saveMeta('Не удалось сохранить заметку');
+}
+$('#qNote').addEventListener('input', () => {
+  if (!qCur) return;
+  qCur.note = $('#qNote').value; qCur.edited = Date.now();
+  clearTimeout(qT); qT = setTimeout(flushNote, 500);
+});
+$('#qDone').onclick = () => closeSheets();
+$('#qGo').onclick = () => { const q = qCur; if (!q) return; closeSheets(); setUI(false); renderChapter(q.ch, { off: q.off, len: q.len }); };
+$('#qCopy').onclick = async () => { if (qCur) toast(await copyText(quoteText(qCur, R.meta)) ? 'Цитата скопирована' : 'Не удалось скопировать'); };
+$('#qDel').onclick = e => {
+  if (!qCur || !armed(e.currentTarget, 'Нажмите ещё раз, чтобы удалить')) return;
+  clearTimeout(qT); qT = 0;
+  R.meta.quotes = (R.meta.quotes || []).filter(q => q !== qCur); qCur = null;
+  saveMeta('Не удалось удалить цитату');
+  paintQuotes(); closeSheets(); toast('Цитата удалена');
+};
+function renderQuotes() {
+  const list = $('#qtList');
+  const items = (R.meta.quotes || []).slice().sort((x, y) => x.ch - y.ch || x.off - y.off);
+  if (!items.length) { list.innerHTML = '<li><p class="empty-note">Цитат пока нет. Выделите текст в книге и нажмите «Цитата» или «Заметка».</p></li>'; return; }
+  list.innerHTML = `<li class="q-tools"><button type="button" class="btn" data-qact="copy">Копировать все</button><button type="button" class="btn" data-qact="file">Сохранить в файл</button></li>`
+    + items.map(q => `<li class="bm"><button type="button" class="bm-go" data-id="${q.id}">
+      <span class="bm-text q-quote">${esc(q.text)}</span>${q.note ? `<span class="q-note">${esc(q.note)}</span>` : ''}
+      <span class="bm-meta">${esc([q.chTitle, Math.floor((q.pct || 0) * 100) + '%', fmtDate(q.created)].filter(Boolean).join(', '))}</span></button>
+      <button type="button" class="icon-btn bm-edit" data-edit="${q.id}" aria-label="Заметка и действия"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button></li>`).join('');
+}
+$('#qtList').addEventListener('click', async e => {
+  const act = e.target.closest('[data-qact]');
+  if (act) {
+    if (act.dataset.qact === 'copy') toast(await copyText(quotesMd(R.meta)) ? 'Все цитаты скопированы' : 'Не удалось скопировать');
+    else saveQuotesFile(R.meta);
+    return;
+  }
+  const ed = e.target.closest('[data-edit]');
+  if (ed) { openQuote(ed.dataset.edit, { fromList: true }); return; }
+  const go = e.target.closest('.bm-go'); if (!go) return;
+  const q = (R.meta.quotes || []).find(x => x.id === go.dataset.id); if (!q) return;
+  closeSheets(); setUI(false);
+  renderChapter(q.ch, { off: q.off, len: q.len });
+});
+const quoteText = (q, m) => `«${q.text}»` + (m ? `\n— ${[authorsOf(m), m.title].filter(Boolean).join(', ')}` : '') + (q.note ? `\n\n${q.note}` : '');
+function quotesMd(m) {
+  const qs = (m.quotes || []).slice().sort((x, y) => x.ch - y.ch || x.off - y.off);
+  let s = `# ${m.title}\n` + (authorsOf(m) ? `\n${authorsOf(m)}\n` : '');
+  let last = null;
+  for (const q of qs) {
+    if (q.chTitle && q.chTitle !== last) { s += `\n## ${q.chTitle}\n`; last = q.chTitle; }
+    s += `\n> ${q.text}\n` + (q.note ? `\n${q.note}\n` : '') + `\n*${Math.floor((q.pct || 0) * 100)}%, ${fmtDate(q.created)}*\n`;
+  }
+  return s;
+}
+const fileName = s => s.replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 80) || 'книга';
+function saveQuotesFile(m) { download(new Blob([quotesMd(m)], { type: 'text/markdown;charset=utf-8' }), `${fileName(m.title)} — цитаты.md`); }
+function download(blob, name) {
+  const url = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+async function copyText(t) {
+  try { await navigator.clipboard.writeText(t); return true; } catch (e) {}
+  const ta = document.createElement('textarea');
+  ta.value = t; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
+  ta.remove(); return ok;
+}
 
 /* Search */
 function norm(s) {
@@ -1318,6 +1671,7 @@ function openSheet(id) {
   setTimeout(() => { const c = s.querySelector('.sheet-close'); if (c) c.focus({ preventScroll: true }); }, 50);
 }
 function closeSheets(keepScrim) {
+  flushNote();
   document.querySelectorAll('.sheet.on').forEach(s => s.classList.remove('on'));
   if (!keepScrim) scrim.classList.remove('on');
 }
@@ -1388,6 +1742,88 @@ $('#setSheet').addEventListener('click', async e => {
     relayout();
   }
 });
+
+/* ================= Backup ================= */
+// Format: zip with polka-backup.json ({ app, backup, created, settings, library, books: [meta] }) and books/<id> raw files.
+let bkpBusy = false;
+function needZip() { if (window.JSZip) return true; toast('Не загрузилась библиотека для ZIP — откройте Полку при подключении к интернету', 6000); return false; }
+async function exportBackup(withFiles) {
+  if (!needZip()) return;
+  const metas = await DB.all('meta');
+  if (!metas.length) { toast('Полка пуста — сохранять нечего'); return; }
+  toast('Готовлю резервную копию…', 60000);
+  const zip = new JSZip();
+  zip.file('polka-backup.json', JSON.stringify({ app: 'polka', backup: 1, created: Date.now(), settings: S, library: { sort: L.sort, filter: L.filter }, books: metas }));
+  if (withFiles) for (const m of metas) {
+    const f = await DB.get('files', m.id);
+    if (f) zip.file('books/' + m.id, f.data, { compression: m.format === 'epub' || /\.zip$/i.test(m.name || '') ? 'STORE' : 'DEFLATE' });
+  }
+  const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+  download(blob, `polka-backup-${new Date().toISOString().slice(0, 10)}.zip`);
+  toast(`Копия готова: книг ${metas.length}, ${fmtSize(blob.size)}`, 5000);
+}
+/* Union of bookmarks or quotes by id; for the same id the later edit wins */
+function unionById(a, b) {
+  const map = new Map();
+  for (const x of [...(a || []), ...(b || [])]) {
+    if (!x || !x.id) continue;
+    const y = map.get(x.id);
+    if (!y || (x.edited || x.created || 0) > (y.edited || y.created || 0)) map.set(x.id, x);
+  }
+  return [...map.values()];
+}
+function mergeMeta(cur, m) {
+  const out = { ...cur }, newer = (m.opened || 0) > (cur.opened || 0);
+  if (newer) Object.assign(out, { pos: m.pos, progress: m.progress, opened: m.opened });
+  if (m.done != null && (newer || cur.done == null)) out.done = m.done;
+  if (!out.cover && m.cover) out.cover = m.cover;
+  out.bookmarks = unionById(cur.bookmarks, m.bookmarks);
+  out.quotes = unionById(cur.quotes, m.quotes);
+  return out;
+}
+async function importBackup(file) {
+  if (!needZip()) return;
+  let zip, data;
+  try {
+    zip = await JSZip.loadAsync(file);
+    const j = zip.file('polka-backup.json');
+    data = j && JSON.parse(await j.async('string'));
+    if (!data || data.app !== 'polka' || !Array.isArray(data.books)) throw new Error('not a backup');
+  } catch (e) { toast(`«${file.name}» — не резервная копия Полки`, 5000); return; }
+  toast('Восстанавливаю…', 60000);
+  const existing = await DB.all('meta').catch(() => []);
+  let added = 0, updated = 0, missing = 0;
+  try {
+    for (const m of data.books) {
+      if (!m || !m.id || !m.title) continue;
+      const cur = existing.find(x => x.id === m.id) || existing.find(x => x.name && x.name === m.name && x.size === m.size);
+      if (cur) { await DB.put('meta', mergeMeta(cur, m)); updated++; continue; }
+      const f = zip.file('books/' + m.id);
+      if (!f) { missing++; continue; }
+      await DB.put('files', { id: m.id, data: await f.async('arraybuffer') });
+      await DB.put('meta', m);
+      added++;
+    }
+  } catch (e) { console.error(e); toast('Восстановление прервалось: ' + e.message, 6000); renderLibrary(); return; }
+  if (data.settings) { for (const k in DEFAULTS) if (k in data.settings) S[k] = data.settings[k]; applySettings(); }
+  if (data.library) { if (SORTS[data.library.sort]) L.sort = data.library.sort; if (data.library.filter) L.filter = data.library.filter; saveLib(); }
+  await renderLibrary();
+  const parts = [added && `добавлено книг: ${added}`, updated && `обновлено: ${updated}`, missing && `без файла пропущено: ${missing}`].filter(Boolean);
+  toast(parts.length ? 'Готово — ' + parts.join(', ') : 'В копии нет книг', 6000);
+}
+async function busy(fn) {
+  if (bkpBusy) return;
+  bkpBusy = true; $('#bkpSave').disabled = $('#bkpLoad').disabled = true;
+  try { await fn(); } catch (e) { console.error(e); toast('Ошибка: ' + e.message, 6000); }
+  finally { bkpBusy = false; $('#bkpSave').disabled = $('#bkpLoad').disabled = false; }
+}
+$('#backupBtn').onclick = () => openSheet('backupSheet');
+$('#bkpSave').onclick = () => busy(() => exportBackup($('#bkpFiles').checked));
+$('#bkpLoad').onclick = () => $('#bkpInput').click();
+$('#bkpInput').onchange = () => {
+  const f = $('#bkpInput').files[0]; $('#bkpInput').value = '';
+  if (f) busy(async () => { await importBackup(f); closeSheets(); });
+};
 
 /* ================= Init ================= */
 try { if (history.state && history.state.polka) history.replaceState(null, ''); } catch (e) {}

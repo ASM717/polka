@@ -1,6 +1,6 @@
 // Полка — service worker: офлайн-работа после первого открытия.
 // При каждом релизе меняйте VERSION, чтобы браузеры обновили кэш.
-const VERSION = 'polka-0.2.0';
+const VERSION = 'polka-0.3.0';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 const RUNTIME_HOSTS = ['cdnjs.cloudflare.com', 'fonts.googleapis.com', 'fonts.gstatic.com'];
 
