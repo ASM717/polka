@@ -233,6 +233,7 @@ body.dragging .dropveil{display:grid}
 /* ---------- Quotes ---------- */
 .selbar{position:absolute; left:50%; bottom:calc(44px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:6; display:flex; background:var(--ink); color:var(--bg); border-radius:22px; box-shadow:var(--shadow); overflow:hidden; white-space:nowrap}
 .selbar button{font:inherit; font-size:14px; font-weight:500; color:inherit; background:none; border:0; padding:0 15px; min-height:44px; cursor:pointer}
+@media (max-width:420px){ .selbar button{padding:0 11px; font-size:13px} }
 .selbar button+button{border-left:1px solid color-mix(in srgb, var(--bg) 30%, transparent)}
 .q-quote{border-left:3px solid #E2B53A; padding-left:10px}
 :root[data-theme="eink"] .q-quote{border-left-color:#000}
@@ -264,6 +265,47 @@ body.dragging .dropveil{display:grid}
 .check input{width:20px; height:20px; accent-color:var(--accent); margin:0}
 .btn.wide{width:100%}
 .sec-label{font-size:13px; color:var(--muted); margin:26px 0 0; padding-top:16px; border-top:1px solid var(--rule)}
+
+/* ---------- Series, tags ---------- */
+.meta .sr{font-size:12px; margin-top:1px}
+.shelf-group{grid-column:1/-1; font-family:var(--serif); font-weight:600; font-size:20px; margin:8px 0 -12px; padding-top:14px; border-top:1px solid var(--rule)}
+.shelf-group:first-child{border-top:0; padding-top:0; margin-top:0}
+.tag-list{margin-top:10px}
+.tag-list button{flex:0 1 auto; min-height:38px; border-radius:19px; padding:4px 14px}
+.tag-add{display:flex; gap:8px; margin-top:10px}
+.tag-add input{flex:1; min-width:0; font:inherit; font-size:16px; padding:8px 12px; min-height:44px; border:1px solid var(--rule); border-radius:8px; background:var(--bg); color:var(--ink)}
+
+/* ---------- Statistics ---------- */
+.runfoot #runLeft{overflow:hidden; text-overflow:ellipsis}
+.tiles{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0 18px}
+.tile{border:1px solid var(--rule); border-radius:10px; padding:12px 14px; background:var(--bg)}
+.tile-l{font-size:12px; color:var(--muted)}
+.tile-v{font-family:var(--serif); font-weight:600; font-size:24px; line-height:1.2; margin-top:4px; font-variant-numeric:tabular-nums}
+.tile-s{font-size:12px; color:var(--muted); margin-top:2px}
+.chart{margin:0 0 40px}
+.chart-h{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; font-size:13px; margin-bottom:10px}
+.chart-h span:first-child{color:var(--muted)}
+.chart-h span:last-child{font-variant-numeric:tabular-nums}
+.bars{display:grid; grid-template-columns:repeat(14,1fr); height:120px; border-bottom:1px solid var(--rule)}
+.bar-c{display:flex; flex-direction:column; justify-content:flex-end; align-items:center; height:100%; padding:0 1px; border:0; background:none; cursor:pointer; position:relative; font:inherit; color:var(--muted)}
+.bar-c i{display:block; width:min(100%,18px); background:var(--accent); border-radius:4px 4px 0 0; opacity:.75}
+.bar-c.today i,.bar-c:hover i,.bar-c:focus-visible i{opacity:1}
+.bar-c span{position:absolute; bottom:-20px; font-size:11px; font-variant-numeric:tabular-nums}
+.bar-c.today span{color:var(--ink); font-weight:600}
+.top-books{list-style:none; margin:8px 0 0; padding:0; font-size:14px}
+.top-books li{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px solid var(--rule)}
+.top-books li span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.top-books li span:last-child{color:var(--muted); white-space:nowrap; font-variant-numeric:tabular-nums}
+
+/* ---------- Dictionary ---------- */
+.dict-lang{font-size:12px; color:var(--muted); margin:14px 0 0; text-transform:uppercase; letter-spacing:.06em}
+.dict-pos{font-family:var(--serif); font-weight:600; font-size:17px; margin:12px 0 4px}
+.dict-defs{margin:6px 0 0; padding-left:1.4em; font-family:var(--rfont); font-size:16px; line-height:1.5}
+.dict-defs li{margin:0 0 .5em}
+.dict-defs i{color:var(--muted); font-size:.9em}
+.dict-link{font:inherit; color:var(--accent); background:none; border:0; padding:0; cursor:pointer; text-align:inherit}
+.dict-back{margin-top:12px; font-size:14px}
+#dictFoot a{color:var(--accent)}
 .toast{position:fixed; left:50%; bottom:calc(24px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:60; background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:8px; font-size:14px; max-width:min(90vw,480px); text-align:center}
 </style>
 </head>
@@ -276,6 +318,7 @@ body.dragging .dropveil{display:grid}
       <p class="brand-sub">Читалка для FB2 и EPUB. Книги хранятся только в этом браузере и никуда не отправляются.</p>
     </div>
     <div class="lib-actions">
+      <button class="btn" id="statsBtn" type="button">Статистика</button>
       <button class="btn" id="backupBtn" type="button">Резервная копия</button>
       <button class="btn primary" id="addBtn" type="button">Добавить книги</button>
     </div>
@@ -294,7 +337,9 @@ body.dragging .dropveil{display:grid}
       <option value="title">По названию</option>
       <option value="author">По автору</option>
       <option value="progress">По прогрессу</option>
+      <option value="series">По сериям</option>
     </select>
+    <select id="libTag" aria-label="Метка" hidden></select>
     <div class="seg" id="libFilter" role="group" aria-label="Какие книги показывать">
       <button type="button" data-filter="all">Все</button>
       <button type="button" data-filter="reading">Читаю</button>
@@ -305,7 +350,7 @@ body.dragging .dropveil{display:grid}
   <p class="empty-note" id="libNone" hidden>Подходящих книг нет.</p>
   <div class="shelf" id="shelf"></div>
   <input type="file" id="fileInput" multiple hidden>
-  <p class="lib-foot">Версия 0.3: цитаты и заметки, сортировка и поиск по полке, резервная копия. Работает офлайн после первого открытия.</p>
+  <p class="lib-foot">Версия 0.4: статистика чтения, метки и серии, словарь. Работает офлайн после первого открытия (словарю нужен интернет).</p>
 </main>
 
 <div id="reader" class="paged" aria-hidden="true">
@@ -331,11 +376,12 @@ body.dragging .dropveil{display:grid}
     <div id="viewport"><div id="flow"></div></div>
     <div class="loading" id="loading">Открываю книгу…</div>
   </div>
-  <div class="runfoot"><span id="runPage"></span><span id="runPct"></span></div>
+  <div class="runfoot"><span id="runPage"></span><span id="runLeft"></span><span id="runPct"></span></div>
   <button class="btn back-pill" id="backPill" type="button" hidden>Вернуться назад</button>
   <div class="selbar" id="selBar" role="toolbar" aria-label="Действия с выделенным текстом" hidden>
     <button type="button" data-sel="quote">Цитата</button>
     <button type="button" data-sel="note">Заметка</button>
+    <button type="button" data-sel="dict" hidden>Словарь</button>
     <button type="button" data-sel="copy">Копировать</button>
   </div>
   <div class="bar bottom">
@@ -371,6 +417,11 @@ body.dragging .dropveil{display:grid}
   </div>
 </aside>
 
+<aside class="sheet" id="dictSheet" aria-label="Словарь">
+  <div class="sheet-head"><h2 id="dictWord">Словарь</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="sheet-body"><div id="dictBody"></div><p class="hint" id="dictFoot"></p></div>
+</aside>
+
 <aside class="sheet" id="bookSheet" aria-label="О книге">
   <div class="sheet-head"><h2>О книге</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="sheet-body">
@@ -381,13 +432,21 @@ body.dragging .dropveil{display:grid}
       <button class="btn" type="button" id="bkQuotes">Сохранить цитаты в файл</button>
       <button class="btn danger" type="button" id="bkDel">Удалить с полки</button>
     </div>
+    <div class="sec-label">Метки</div>
+    <div class="seg tag-list" id="bkTags" role="group" aria-label="Метки книги"></div>
+    <div class="tag-add"><input type="text" id="bkTagNew" placeholder="Новая метка" maxlength="40" autocomplete="off" aria-label="Новая метка" enterkeyhint="done"><button class="btn" type="button" id="bkTagAdd">Добавить</button></div>
   </div>
+</aside>
+
+<aside class="sheet" id="statsSheet" aria-label="Статистика чтения">
+  <div class="sheet-head"><h2>Статистика</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
+  <div class="sheet-body" id="statsBody"></div>
 </aside>
 
 <aside class="sheet" id="backupSheet" aria-label="Резервная копия">
   <div class="sheet-head"><h2>Резервная копия</h2><button class="icon-btn sheet-close" type="button" aria-label="Закрыть"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button></div>
   <div class="sheet-body">
-    <p class="sheet-text">Копия — один файл .zip: книги, место чтения, закладки, цитаты и настройки. Сохраните её, чтобы перенести полку на другое устройство или не потерять при очистке браузера.</p>
+    <p class="sheet-text">Копия — один файл .zip: книги, место чтения, закладки, цитаты, метки, статистика и настройки. Сохраните её, чтобы перенести полку на другое устройство или не потерять при очистке браузера.</p>
     <label class="check"><input type="checkbox" id="bkpFiles" checked> Включить файлы книг</label>
     <p class="hint">Без файлов копия весит мало, но восстановить из неё можно только книги, которые уже есть на полке.</p>
     <button class="btn primary wide" type="button" id="bkpSave">Сохранить копию</button>
@@ -468,16 +527,17 @@ function toast(msg, ms = 2600) { const t = $('#toast'); t.textContent = msg; t.h
 /* ================= Storage (IndexedDB with in-memory fallback) ================= */
 const DB = (() => {
   let dbp = null, memory = false;
-  const mem = { meta: new Map(), files: new Map() };
+  const mem = { meta: new Map(), files: new Map(), stats: new Map() };
   function open() {
     if (dbp) return dbp;
     dbp = new Promise(res => {
       try {
-        const rq = indexedDB.open('polka-reader', 1);
+        const rq = indexedDB.open('polka-reader', 2);
         rq.onupgradeneeded = () => {
           const db = rq.result;
           if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'id' });
           if (!db.objectStoreNames.contains('files')) db.createObjectStore('files', { keyPath: 'id' });
+          if (!db.objectStoreNames.contains('stats')) db.createObjectStore('stats', { keyPath: 'id' });
         };
         rq.onsuccess = () => res(rq.result);
         rq.onerror = () => { memory = true; res(null); };
@@ -589,6 +649,8 @@ function parseFb2Text(text) {
     return nm || txt(kidLn(a, 'nickname'));
   }).filter(Boolean) : [];
   const lang = txt(ti && kidLn(ti, 'lang')) || 'ru';
+  const seq = ti && kidLn(ti, 'sequence');
+  const series = seq && seq.getAttribute('name') ? { name: seq.getAttribute('name').trim(), num: parseFloat(seq.getAttribute('number')) || null } : null;
   let cover = null;
   const cp = ti && kidLn(ti, 'coverpage');
   if (cp) { const im = deepFind(cp, 'image'); if (im) cover = bin[getHref(im).replace(/^#/, '')] || null; }
@@ -666,7 +728,7 @@ function parseFb2Text(text) {
     const h = [...b.childNodes].map(c => conv(c, 1)).join('');
     if (hasContent(h)) { toc.push({ title: t, ch: cur, level: 1 }); chapters.push({ title: t, html: h, isNotes: true }); }
   });
-  return { format: 'fb2', title, authors, lang, cover, chapters, toc, imgData: null };
+  return { format: 'fb2', title, authors, lang, series, cover, chapters, toc, imgData: null };
 }
 
 /* ================= EPUB ================= */
@@ -703,6 +765,18 @@ async function parseEpub(zip) {
   const title = (byTag(opf, 'title')[0] || {}).textContent?.trim() || 'Без названия';
   const authors = byTag(opf, 'creator').map(e => e.textContent.trim()).filter(Boolean);
   const lang = (byTag(opf, 'language')[0] || {}).textContent?.trim() || 'ru';
+  // Series: calibre meta (EPUB 2) or belongs-to-collection with group-position (EPUB 3)
+  const metas = byTag(opf, 'meta');
+  const metaName = n => { const m = metas.find(e => e.getAttribute('name') === n); return m ? (m.getAttribute('content') || '').trim() : ''; };
+  let series = null;
+  if (metaName('calibre:series')) series = { name: metaName('calibre:series'), num: parseFloat(metaName('calibre:series_index')) || null };
+  else {
+    const col = metas.find(e => e.getAttribute('property') === 'belongs-to-collection' && e.textContent.trim());
+    if (col) {
+      const pos = col.id && metas.find(e => e.getAttribute('refines') === '#' + col.id && e.getAttribute('property') === 'group-position');
+      series = { name: col.textContent.trim(), num: pos ? parseFloat(pos.textContent) || null : null };
+    }
+  }
   const manifest = {}, byPath = {};
   byTag(opf, 'item').forEach(it => {
     const o = { id: it.getAttribute('id'), path: resolvePath(base, it.getAttribute('href') || ''), type: it.getAttribute('media-type') || '', props: it.getAttribute('properties') || '' };
@@ -832,7 +906,7 @@ async function parseEpub(zip) {
     const t = toc.find(x => x.ch === j);
     if (t && t.title) { last = t.title; c.title = t.title; } else c.title = c.title || last;
   });
-  return { format: 'epub', title, authors, lang, cover, chapters, toc, imgData };
+  return { format: 'epub', title, authors, lang, series, cover, chapters, toc, imgData };
 }
 
 /* ================= Book post-processing ================= */
@@ -903,11 +977,13 @@ const SORTS = {
   added: (a, b) => b.added - a.added,
   title: (a, b) => coll.compare(a.title, b.title),
   author: (a, b) => coll.compare(surname(a), surname(b)) || coll.compare(authorsOf(a), authorsOf(b)) || coll.compare(a.title, b.title),
-  progress: (a, b) => (isDone(a) - isDone(b)) || (b.progress || 0) - (a.progress || 0)
+  progress: (a, b) => (isDone(a) - isDone(b)) || (b.progress || 0) - (a.progress || 0),
+  series: (a, b) => (!a.series - !b.series) || (a.series && b.series && (coll.compare(a.series.name, b.series.name) || (a.series.num ?? 1e9) - (b.series.num ?? 1e9))) || coll.compare(a.title, b.title)
 };
-const L = { q: '', sort: 'recent', filter: 'all' };
-try { const v = JSON.parse(localStorage.getItem('polka-library') || '{}'); if (SORTS[v.sort]) L.sort = v.sort; if (v.filter) L.filter = v.filter; } catch (e) {}
-function saveLib() { try { localStorage.setItem('polka-library', JSON.stringify({ sort: L.sort, filter: L.filter })); } catch (e) {} }
+const L = { q: '', sort: 'recent', filter: 'all', tag: '', tags: [] };
+try { const v = JSON.parse(localStorage.getItem('polka-library') || '{}'); if (SORTS[v.sort]) L.sort = v.sort; if (v.filter) L.filter = v.filter; if (v.tag) L.tag = v.tag; } catch (e) {}
+function saveLib() { try { localStorage.setItem('polka-library', JSON.stringify({ sort: L.sort, filter: L.filter, tag: L.tag })); } catch (e) {} }
+const seriesText = m => m.series ? m.series.name + (m.series.num != null ? `, №${m.series.num}` : '') : '';
 const fmtSize = n => n < 1048576 ? Math.max(1, Math.round(n / 1024)) + ' КБ' : (n / 1048576).toFixed(1).replace('.', ',') + ' МБ';
 const fmtDay = t => new Date(t).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
 
@@ -924,18 +1000,31 @@ async function renderLibrary() {
     b.setAttribute('aria-pressed', String(f === L.filter));
   });
   $('#libSort').value = L.sort;
+  L.tags = [...new Set(metas.flatMap(m => m.tags || []))].sort(coll.compare);
+  if (L.tag && !L.tags.includes(L.tag)) { L.tag = ''; saveLib(); }
+  const tagSel = $('#libTag');
+  tagSel.hidden = !L.tags.length;
+  tagSel.innerHTML = '<option value="">Все метки</option>' + L.tags.map(t => `<option value="${esc(t)}">${esc(t)}</option>`).join('');
+  tagSel.value = L.tag;
   const q = norm(L.q.trim());
   const shown = metas
     .filter(m => L.filter === 'all' || stateOf(m) === L.filter)
-    .filter(m => !q || norm(m.title + ' ' + authorsOf(m)).includes(q))
+    .filter(m => !L.tag || (m.tags || []).includes(L.tag))
+    .filter(m => !q || norm([m.title, authorsOf(m), m.series ? m.series.name : '', ...(m.tags || [])].join(' ')).includes(q))
     .sort(SORTS[L.sort]);
   $('#libNone').hidden = !metas.length || shown.length > 0;
+  const grouped = L.sort === 'series' && shown.some(m => m.series);
+  let group = null;
   shelf.innerHTML = shown.map(m => {
     const done = isDone(m), p = done ? 100 : Math.floor((m.progress || 0) * 100);
-    return `<div class="book-wrap">
+    const g = m.series ? m.series.name : '';
+    const head = grouped && g !== group ? `<h2 class="shelf-group">${esc(g || 'Без серии')}</h2>` : '';
+    group = g;
+    return `${head}<div class="book-wrap">
       <button class="book" type="button" data-id="${esc(m.id)}">
         <div class="cover">${coverHtml(m)}</div>
         <div class="meta"><div class="t">${esc(m.title)}</div><div class="a">${esc(authorsOf(m) || 'Автор не указан')}</div>
+        ${m.series && !grouped ? `<div class="a sr">${esc(seriesText(m))}</div>` : grouped && m.series && m.series.num != null ? `<div class="a sr">№${m.series.num}</div>` : ''}
         <div class="prog"><i style="width:${p}%"></i></div><div class="pct">${done ? 'Прочитана' : p ? `Прочитано ${p}%` : 'Не начата'}</div></div>
       </button>
       <button class="more" type="button" data-more="${esc(m.id)}" aria-label="О книге «${esc(m.title)}»">⋯</button>
@@ -945,6 +1034,7 @@ async function renderLibrary() {
 let libT;
 $('#libFind').addEventListener('input', () => { clearTimeout(libT); libT = setTimeout(() => { L.q = $('#libFind').value; renderLibrary(); }, 150); });
 $('#libSort').onchange = () => { L.sort = $('#libSort').value; saveLib(); renderLibrary(); };
+$('#libTag').onchange = () => { L.tag = $('#libTag').value; saveLib(); renderLibrary(); };
 $('#libFilter').addEventListener('click', e => {
   const b = e.target.closest('[data-filter]'); if (!b) return;
   L.filter = b.dataset.filter; saveLib(); renderLibrary();
@@ -963,7 +1053,7 @@ async function addFiles(files) {
       const id = 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
       const cover = book.cover ? await thumb(book.cover) : null;
       await DB.put('files', { id, data: buf });
-      await DB.put('meta', { id, title: book.title, authors: book.authors, format: book.format, cover, added: Date.now(), opened: 0, progress: 0, pos: null, size: f.size, name: f.name });
+      await DB.put('meta', { id, title: book.title, authors: book.authors, series: book.series, tags: [], format: book.format, cover, added: Date.now(), opened: 0, progress: 0, pos: null, size: f.size, name: f.name });
       added++;
     } catch (err) { console.error(err); toast(`Не удалось добавить «${f.name}»: ${err.message}`, 6000); return renderLibrary(); }
   }
@@ -999,18 +1089,47 @@ async function openBookSheet(id) {
   $('#bkInfo').innerHTML = `<div class="bk-head"><div class="cover">${coverHtml(m)}</div><div>
       <div class="bk-t">${esc(m.title)}</div><div class="bk-a">${esc(authorsOf(m) || 'Автор не указан')}</div></div></div>
     <dl class="bk-dl">
+      ${m.series ? `<dt>Серия</dt><dd>${esc(seriesText(m))}</dd>` : ''}
       <dt>Файл</dt><dd>${esc((m.format || '').toUpperCase())}${m.size ? ', ' + fmtSize(m.size) : ''}</dd>
       <dt>Добавлена</dt><dd>${fmtDay(m.added)}</dd>
       ${m.opened ? `<dt>Открывалась</dt><dd>${fmtDay(m.opened)}</dd>` : ''}
       <dt>Прочитано</dt><dd>${isDone(m) ? 'полностью' : p + '%'}</dd>
+      ${m.readMs >= 60000 ? `<dt>Время чтения</dt><dd>${fmtDur(m.readMs)}</dd>` : ''}
       <dt>Закладки</dt><dd>${nb || 'нет'}</dd>
       <dt>Цитаты</dt><dd>${nq || 'нет'}</dd>
     </dl>`;
   $('#bkDone').textContent = isDone(m) ? 'Снять отметку «Прочитана»' : 'Отметить прочитанной';
   $('#bkQuotes').hidden = !nq;
   disarm($('#bkDel'), 'Удалить с полки');
-  openSheet('bookSheet');
+  $('#bkTagNew').value = '';
+  renderBookTags();
+  if (!$('#bookSheet').classList.contains('on')) openSheet('bookSheet');
 }
+function renderBookTags() {
+  const mine = bkCur.tags || [], all = [...new Set([...L.tags, ...mine])].sort(coll.compare);
+  $('#bkTags').innerHTML = all.length
+    ? all.map(t => `<button type="button" data-tag="${esc(t)}" aria-pressed="${mine.includes(t)}">${esc(t)}</button>`).join('')
+    : '<p class="hint" style="margin:0">Меток пока нет. Например: «Перечитать», «Учёба», «Подарить».</p>';
+}
+async function setBookTags(tags) {
+  bkCur.tags = tags;
+  try { await DB.put('meta', bkCur); } catch (e) { toast('Не удалось сохранить метки: ' + e.message, 5000); return; }
+  await renderLibrary(); renderBookTags();
+}
+$('#bkTags').addEventListener('click', e => {
+  const b = e.target.closest('[data-tag]'); if (!b || !bkCur) return;
+  const t = b.dataset.tag, mine = bkCur.tags || [];
+  setBookTags(mine.includes(t) ? mine.filter(x => x !== t) : [...mine, t]);
+});
+function addBookTag() {
+  const t = $('#bkTagNew').value.replace(/\s+/g, ' ').trim().slice(0, 40);
+  if (!t || !bkCur) return;
+  $('#bkTagNew').value = '';
+  const same = [...L.tags, ...(bkCur.tags || [])].find(x => coll.compare(x, t) === 0) || t;
+  if (!(bkCur.tags || []).includes(same)) setBookTags([...(bkCur.tags || []), same]);
+}
+$('#bkTagAdd').onclick = addBookTag;
+$('#bkTagNew').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); addBookTag(); } });
 $('#bkRead').onclick = () => { if (!bkCur) return; const id = bkCur.id; closeSheets(); openBook(id); };
 $('#bkDone').onclick = async () => {
   if (!bkCur) return;
@@ -1121,6 +1240,7 @@ async function renderChapter(i, where) {
   i = clamp(i, 0, b.chapters.length - 1);
   const tok = ++R.tok;
   R.ch = i;
+  if (where && typeof where === 'object') ST.pos = null;
   const last = i >= b.chapters.length - 1;
   flow.style.visibility = 'hidden';
   flow.lang = b.lang || 'ru';
@@ -1197,7 +1317,9 @@ function updateChrome() {
   $('#runTitle').textContent = ch.title || b.title;
   $('#runPct').textContent = Math.floor(p * 100) + '%';
   $('#runPage').textContent = S.mode === 'paged' ? `${R.page + 1} из ${R.pages}` : '';
-  if (!R.seeking) { seek.value = Math.round(p * 1000); $('#seekLabel').textContent = ch.title || ''; $('#seekPct').textContent = Math.floor(p * 100) + '%'; }
+  const chLeft = (1 - (S.mode === 'paged' && R.page === R.pages - 1 ? 1 : ratio())) * b.len[R.ch] / ST.speed;
+  $('#runLeft').textContent = chLeft >= 30000 ? `${fmtDur(chLeft)} до конца главы` : '';
+  if (!R.seeking) { seek.value = Math.round(p * 1000); $('#seekLabel').textContent = ch.title || ''; $('#seekPct').textContent = Math.floor(p * 100) + '%' + (p < 1 ? ` · ещё ${fmtDur((1 - p) * b.total / ST.speed)}` : ''); }
   const marked = bookmarksOnScreen().length > 0;
   $('#ribbon').classList.toggle('on', marked);
   const bb = $('#bmBtn'); bb.classList.toggle('on', marked); bb.setAttribute('aria-pressed', String(marked));
@@ -1210,8 +1332,50 @@ function writePos() {
   if (!R.book || !R.meta) return;
   R.meta.pos = { ch: R.ch, r: ratio() }; R.meta.progress = pct(); R.meta.opened = Date.now();
   DB.put('meta', R.meta).catch(() => {});
+  flushStats();
 }
-function savePos() { clearTimeout(saveT); saveT = setTimeout(writePos, 400); }
+function savePos() { statTick(); clearTimeout(saveT); saveT = setTimeout(writePos, 400); }
+
+/* Reading statistics: one record per local day { id: 'YYYY-MM-DD', ms, chars, books: { [bookId]: ms } }.
+   Time between two reading actions counts up to IDLE_CAP; forward movement under JUMP chars counts as read text. */
+const IDLE_CAP = 180000, JUMP = 6000, PAGE_CHARS = 1800, DEFAULT_SPEED = 1100 / 60000;
+const ST = { rec: null, last: 0, pos: null, dirty: false, speed: DEFAULT_SPEED };
+const dayKey = (t = Date.now()) => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const daysAgo = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return dayKey(d.getTime()); };
+const emptyDay = id => ({ id, ms: 0, chars: 0, books: {} });
+function statTick() {
+  if (!R.book || !R.meta || !ST.rec) return;
+  const now = Date.now(), k = dayKey(now);
+  if (ST.rec.id !== k) { flushStats(); ST.rec = emptyDay(k); }
+  const dt = ST.last ? Math.min(now - ST.last, IDLE_CAP) : 0;
+  ST.last = now;
+  const pos = Math.round(pct() * R.book.total), dc = ST.pos == null ? 0 : pos - ST.pos;
+  ST.pos = pos;
+  if (dt <= 0 && dc <= 0) return;
+  ST.rec.ms += dt;
+  ST.rec.books[R.meta.id] = (ST.rec.books[R.meta.id] || 0) + dt;
+  if (dc > 0 && dc < JUMP) ST.rec.chars += dc;
+  R.meta.readMs = (R.meta.readMs || 0) + dt;
+  ST.dirty = true;
+}
+function flushStats() {
+  if (!ST.dirty || !ST.rec) return;
+  ST.dirty = false;
+  DB.put('stats', { ...ST.rec, books: { ...ST.rec.books } }).catch(() => {});
+}
+/* Characters per millisecond over the last 30 days, once there is enough data */
+function speedOf(days) {
+  const from = daysAgo(30);
+  let ms = 0, ch = 0;
+  days.forEach(d => { if (d.id >= from) { ms += d.ms; ch += d.chars; } });
+  return ms >= 600000 && ch > 0 ? ch / ms : DEFAULT_SPEED;
+}
+function fmtDur(ms) {
+  const m = Math.round(ms / 60000);
+  if (m < 1) return 'меньше минуты';
+  if (m < 60) return m + ' мин';
+  return Math.floor(m / 60) + ' ч' + (m % 60 ? ' ' + (m % 60) + ' мин' : '');
+}
 function relayout() { if (!R.book) return; const r = ratio(); layout(); position({ ratio: r }); updateChrome(); }
 
 function next() {
@@ -1243,6 +1407,11 @@ async function openBook(id) {
     const [meta, file] = await Promise.all([DB.get('meta', id), DB.get('files', id)]);
     if (!meta || !file) throw new Error('книга не найдена в хранилище');
     const book = finalize(await parseBook(file.data));
+    if (meta.series === undefined) meta.series = book.series || null;
+    const days = await DB.all('stats').catch(() => []);
+    ST.speed = speedOf(days);
+    ST.rec = days.find(d => d.id === dayKey()) || emptyDay(dayKey());
+    ST.last = Date.now(); ST.pos = null; ST.dirty = false;
     Object.assign(R, { book, meta, noteCache: new Map(), back: null, texts: null, ntexts: null, findRes: [] });
     $('#findInput').value = ''; $('#findList').innerHTML = ''; $('#findStatus').textContent = '';
     backPill.hidden = true;
@@ -1257,7 +1426,8 @@ async function openBook(id) {
 }
 function closeReader() {
   if (!reader.classList.contains('open')) return;
-  clearTimeout(saveT); writePos();
+  statTick(); clearTimeout(saveT); writePos();
+  ST.rec = null;
   closeSheets();
   reader.classList.remove('open', 'ui'); reader.setAttribute('aria-hidden', 'true'); library.removeAttribute('aria-hidden');
   hideSel();
@@ -1270,7 +1440,10 @@ $('#closeBtn').onclick = () => {
   closeReader();
 };
 window.addEventListener('popstate', () => { if (reader.classList.contains('open')) closeReader(); });
-document.addEventListener('visibilitychange', () => { if (document.hidden) { clearTimeout(saveT); writePos(); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { statTick(); clearTimeout(saveT); writePos(); }
+  else ST.last = Date.now(); // time away from the page is not reading time
+});
 
 /* Links and footnotes */
 function chapterDom(ch) {
@@ -1477,7 +1650,8 @@ function readSelection() {
   if (!text) return null;
   const off = pointOffset(r.startContainer, r.startOffset), end = pointOffset(r.endContainer, r.endOffset);
   if (off < 0 || end <= off) return null;
-  return { ch: R.ch, off, len: end - off, text };
+  const w = text.replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
+  return { ch: R.ch, off, len: end - off, text, word: /^[\p{L}\p{M}'’-]{1,40}$/u.test(w) ? w : '' };
 }
 function hideSel() {
   R.sel = null; $('#selBar').hidden = true;
@@ -1490,6 +1664,7 @@ document.addEventListener('selectionchange', () => {
     if (R.selHold) return;
     R.sel = reader.classList.contains('open') ? readSelection() : null;
     $('#selBar').hidden = !R.sel;
+    $('#selBar [data-sel="dict"]').hidden = !(R.sel && R.sel.word);
     if (R.sel && R.ui) setUI(false);
   }, 150);
 });
@@ -1501,6 +1676,7 @@ $('#selBar').addEventListener('click', async e => {
   if (!b || !sel) return;
   hideSel();
   if (b.dataset.sel === 'copy') { toast(await copyText(sel.text) ? 'Скопировано' : 'Не удалось скопировать'); return; }
+  if (b.dataset.sel === 'dict') { showDict(sel.word); return; }
   const q = addQuote(sel);
   if (b.dataset.sel === 'note') openQuote(q.id, { note: true });
   else toast('Цитата сохранена');
@@ -1613,6 +1789,122 @@ async function copyText(t) {
   let ok = false; try { ok = document.execCommand('copy'); } catch (e) {}
   ta.remove(); return ok;
 }
+
+/* Dictionary: ru.wiktionary.org. Only the looked-up word leaves the device. */
+const WIKT = 'https://ru.wiktionary.org';
+const LANG_NAMES = { ru: 'Русский', en: 'Английский', de: 'Немецкий', fr: 'Французский', es: 'Испанский', it: 'Итальянский', pt: 'Португальский', uk: 'Украинский', be: 'Белорусский', pl: 'Польский', cs: 'Чешский', bg: 'Болгарский', sr: 'Сербский', la: 'Латинский' };
+const dictCache = new Map();
+let dictStack = [], dictTok = 0;
+async function wikt(params) {
+  const u = new URL(WIKT + '/w/api.php');
+  Object.entries({ format: 'json', formatversion: '2', origin: '*', ...params }).forEach(([k, v]) => u.searchParams.set(k, v));
+  const r = await fetch(u);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+async function wiktPage(title) {
+  const d = await wikt({ action: 'parse', page: title, prop: 'text', redirects: '1' });
+  return d.error || !d.parse ? null : { title: d.parse.title, html: d.parse.text };
+}
+/* Crude English word forms: houses → house, cried → cry, reading → read */
+function stems(w) {
+  if (!/^[a-z]+$/.test(w) || w.length < 4) return [];
+  const out = [];
+  if (w.endsWith('ies')) out.push(w.slice(0, -3) + 'y');
+  if (w.endsWith('s')) out.push(w.slice(0, -1));
+  if (w.endsWith('es')) out.push(w.slice(0, -2));
+  if (w.endsWith('ied')) out.push(w.slice(0, -3) + 'y');
+  if (w.endsWith('ed')) out.push(w.slice(0, -2), w.slice(0, -1));
+  if (w.endsWith('ing')) out.push(w.slice(0, -3), w.slice(0, -3) + 'e');
+  return out;
+}
+async function lookupWord(word) {
+  const lower = word.toLowerCase();
+  for (const t of new Set([lower, word, ...stems(lower)])) { const p = await wiktPage(t); if (p) return p; }
+  // Word forms without their own article (домами → дом): take a search hit that shares the beginning of the word
+  const s = await wikt({ action: 'query', list: 'search', srsearch: lower, srlimit: '5', srprop: '' });
+  const pre = lower.slice(0, 3);
+  const hit = ((s.query || {}).search || []).map(x => x.title).find(t => t.toLowerCase().startsWith(pre) && t.length <= lower.length + 3);
+  return hit ? wiktPage(hit) : null;
+}
+function cleanDef(li) {
+  let s = '';
+  const walk = n => {
+    for (const c of n.childNodes) {
+      if (c.nodeType === 3) { s += esc(c.nodeValue); continue; }
+      if (c.nodeType !== 1 || c.localName === 'ol' || c.localName === 'ul') continue;
+      const href = c.localName === 'a' ? c.getAttribute('href') || '' : '';
+      if (/^\/wiki\/[^:]+$/.test(href)) s += `<button type="button" class="dict-link" data-word="${esc(safeDecode(href.slice(6).split('#')[0]).replace(/_/g, ' '))}">${esc(c.textContent)}</button>`;
+      else if (c.classList.contains('label')) s += `<i>${esc(c.textContent)}</i>`;
+      else walk(c);
+    }
+  };
+  walk(li);
+  return s.replace(/\s+/g, ' ').trim();
+}
+/* Article → [{ lang, pos, items }] from the «Значение» lists, grouped by language (h1) and part of speech (h2) */
+function parseWikt(html) {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  doc.querySelectorAll('.mw-editsection, .example-fullblock, sup, style, figure, .reference').forEach(e => e.remove());
+  const out = [];
+  let lang = '', pos = '';
+  for (const h of doc.querySelectorAll('h1, h2, h4')) {
+    const t = h.textContent.trim();
+    if (h.localName === 'h1') { lang = t; pos = ''; continue; }
+    if (h.localName === 'h2') { pos = t; continue; }
+    if (!t.startsWith('Значение')) continue;
+    let el = (h.closest('.mw-heading') || h).nextElementSibling;
+    while (el && el.localName !== 'ol' && !el.classList.contains('mw-heading')) el = el.nextElementSibling;
+    if (!el || el.localName !== 'ol') continue;
+    const items = [...el.children].map(cleanDef).filter(x => /[\p{L}\d]/u.test(x.replace(/<[^>]+>/g, '')));
+    if (items.length) out.push({ lang, pos, items: items.slice(0, 8) });
+  }
+  return out;
+}
+function pickLang(sections, word) {
+  const bookLang = LANG_NAMES[((R.book && R.book.lang) || 'ru').slice(0, 2).toLowerCase()];
+  for (const want of [bookLang, /[а-яё]/i.test(word) ? 'Русский' : 'Английский']) {
+    const s = sections.filter(x => x.lang === want);
+    if (s.length) return s;
+  }
+  return sections.filter(x => x.lang === sections[0].lang);
+}
+async function showDict(word, nested) {
+  if (!nested) dictStack = [];
+  dictStack.push(word);
+  const tok = ++dictTok, body = $('#dictBody');
+  $('#dictWord').textContent = word;
+  body.innerHTML = '<p class="empty-note">Ищу в Викисловаре…</p>';
+  $('#dictFoot').textContent = 'Для поиска слово отправляется на ru.wiktionary.org.';
+  if (!$('#dictSheet').classList.contains('on')) openSheet('dictSheet');
+  const back = dictStack.length > 1 ? `<button type="button" class="btn dict-back">← ${esc(dictStack[dictStack.length - 2])}</button>` : '';
+  let res;
+  try {
+    if (!dictCache.has(word)) dictCache.set(word, lookupWord(word).then(p => p && { title: p.title, sections: parseWikt(p.html) }));
+    res = await dictCache.get(word);
+  } catch (e) {
+    dictCache.delete(word);
+    if (tok === dictTok) body.innerHTML = back + `<p class="empty-note">${navigator.onLine === false ? 'Для словаря нужен интернет. Подключитесь и попробуйте ещё раз.' : 'Не удалось связаться с Викисловарём. Попробуйте ещё раз.'}</p>`;
+    return;
+  }
+  if (tok !== dictTok) return;
+  if (!res || !res.sections.length) {
+    body.innerHTML = back + `<p class="empty-note">В Викисловаре нет толкования для «${esc(word)}».</p>`;
+    $('#dictFoot').innerHTML = `<a href="${WIKT}/w/index.php?search=${encodeURIComponent(word)}" target="_blank" rel="noopener">Поискать на сайте Викисловаря</a>`;
+    return;
+  }
+  const secs = pickLang(res.sections, res.title);
+  body.innerHTML = back
+    + (res.title.toLowerCase() !== word.toLowerCase() ? `<p class="hint">Статья «${esc(res.title)}»</p>` : '')
+    + `<p class="dict-lang">${esc(secs[0].lang)}</p>`
+    + secs.map(x => (x.pos ? `<h3 class="dict-pos">${esc(x.pos)}</h3>` : '') + `<ol class="dict-defs">${x.items.map(i => `<li>${i}</li>`).join('')}</ol>`).join('');
+  $('#dictFoot').innerHTML = `<a href="${WIKT}/wiki/${encodeURIComponent(res.title)}" target="_blank" rel="noopener">Открыть статью в Викисловаре</a>. Тексты Викисловаря доступны по лицензии CC BY-SA.`;
+}
+$('#dictBody').addEventListener('click', e => {
+  const l = e.target.closest('.dict-link');
+  if (l) { showDict(l.dataset.word, true); return; }
+  if (e.target.closest('.dict-back')) { dictStack.pop(); showDict(dictStack.pop(), true); }
+});
 
 /* Search */
 function norm(s) {
@@ -1743,6 +2035,62 @@ $('#setSheet').addEventListener('click', async e => {
   }
 });
 
+/* ================= Statistics ================= */
+const pagesOf = chars => Math.round(chars / PAGE_CHARS);
+const dayLabel = id => new Date(id + 'T12:00').toLocaleDateString('ru-RU', { weekday: 'short', day: 'numeric', month: 'short' });
+function streaks(days) {
+  const on = new Set(days.filter(d => d.ms >= 60000).map(d => d.id));
+  const prevDay = id => dayKey(new Date(id + 'T12:00').getTime() - 864e5);
+  let cur = 0, k = dayKey();
+  if (!on.has(k)) k = prevDay(k);
+  while (on.has(k)) { cur++; k = prevDay(k); }
+  let best = 0, run = 0, last = null;
+  [...on].sort().forEach(id => { run = last && prevDay(id) === last ? run + 1 : 1; best = Math.max(best, run); last = id; });
+  return { cur, best };
+}
+async function renderStats() {
+  const [days, metas] = await Promise.all([DB.all('stats').catch(() => []), DB.all('meta').catch(() => [])]);
+  const byId = new Map(days.map(d => [d.id, d]));
+  const today = byId.get(dayKey()) || emptyDay(dayKey());
+  const from30 = daysAgo(29);
+  const month = days.filter(d => d.id >= from30);
+  const sum = (arr, f) => arr.reduce((a, d) => a + (d[f] || 0), 0);
+  const st = streaks(days), speed = speedOf(days);
+  const doneCount = metas.filter(isDone).length;
+  const last14 = Array.from({ length: 14 }, (_, i) => { const id = daysAgo((13 - i)); return byId.get(id) || emptyDay(id); });
+  const max = Math.max(...last14.map(d => d.ms), 60000);
+  const perBook = {};
+  month.forEach(d => Object.entries(d.books || {}).forEach(([id, ms]) => perBook[id] = (perBook[id] || 0) + ms));
+  const top = Object.entries(perBook).sort((a, b) => b[1] - a[1]).slice(0, 3)
+    .map(([id, ms]) => ({ m: metas.find(x => x.id === id), ms })).filter(x => x.m && x.ms >= 60000);
+  const tip = d => `${dayLabel(d.id)}: ${d.ms >= 60000 ? fmtDur(d.ms) + (d.chars >= PAGE_CHARS ? `, ≈ ${pagesOf(d.chars)} стр.` : '') : 'не читали'}`;
+  if (!days.some(d => d.ms >= 60000)) {
+    $('#statsBody').innerHTML = '<p class="empty-note">Статистика появится, когда вы почитаете хотя бы минуту. Время считается, пока вы листаете или прокручиваете книгу; если ничего не делать дольше трёх минут, ожидание не засчитывается.</p>';
+    return;
+  }
+  $('#statsBody').innerHTML = `
+    <div class="tiles">
+      <div class="tile"><div class="tile-l">Сегодня</div><div class="tile-v">${today.ms >= 60000 ? fmtDur(today.ms) : '—'}</div><div class="tile-s">${today.chars >= PAGE_CHARS ? `≈ ${pagesOf(today.chars)} стр.` : '&nbsp;'}</div></div>
+      <div class="tile"><div class="tile-l">Дней подряд</div><div class="tile-v">${st.cur}</div><div class="tile-s">лучшая серия: ${st.best}</div></div>
+      <div class="tile"><div class="tile-l">За 30 дней</div><div class="tile-v">${fmtDur(sum(month, 'ms'))}</div><div class="tile-s">≈ ${pagesOf(sum(month, 'chars'))} стр.</div></div>
+      <div class="tile"><div class="tile-l">Прочитано книг</div><div class="tile-v">${doneCount}</div><div class="tile-s">из ${metas.length} на полке</div></div>
+    </div>
+    <div class="chart" role="figure" aria-label="Минуты чтения за последние 14 дней">
+      <div class="chart-h"><span>Последние 14 дней · самый долгий день ${fmtDur(max)}</span><span id="chartTip" aria-live="polite">${esc(tip(last14[13]))}</span></div>
+      <div class="bars">${last14.map((d, i) => `<button type="button" class="bar-c${i === 13 ? ' today' : ''}" data-tip="${esc(tip(d))}" aria-label="${esc(tip(d))}"><i style="height:${d.ms ? Math.max(2, d.ms / max * 100) : 0}%"></i><span>${new Date(d.id + 'T12:00').getDate()}</span></button>`).join('')}</div>
+    </div>
+    <dl class="bk-dl">
+      <dt>Скорость</dt><dd>≈ ${Math.round(speed * 60000).toLocaleString('ru-RU')} знаков в минуту${speed === DEFAULT_SPEED ? ' (пока средняя)' : ''}</dd>
+      <dt>Всего</dt><dd>${fmtDur(sum(days, 'ms'))}, ≈ ${pagesOf(sum(days, 'chars'))} стр.</dd>
+    </dl>
+    ${top.length ? `<div class="sec-label">Больше всего читали за 30 дней</div><ol class="top-books">${top.map(x => `<li><span>${esc(x.m.title)}</span><span>${fmtDur(x.ms)}</span></li>`).join('')}</ol>` : ''}
+    <p class="hint">Страницы условные — по ${PAGE_CHARS} знаков. Время считается, пока вы листаете или прокручиваете книгу; паузы дольше трёх минут не засчитываются.</p>`;
+}
+$('#statsBody').addEventListener('pointerover', e => { const b = e.target.closest('.bar-c'); if (b) $('#chartTip').textContent = b.dataset.tip; });
+$('#statsBody').addEventListener('focusin', e => { const b = e.target.closest('.bar-c'); if (b) $('#chartTip').textContent = b.dataset.tip; });
+$('#statsBody').addEventListener('click', e => { const b = e.target.closest('.bar-c'); if (b) $('#chartTip').textContent = b.dataset.tip; });
+$('#statsBtn').onclick = async () => { await renderStats(); openSheet('statsSheet'); };
+
 /* ================= Backup ================= */
 // Format: zip with polka-backup.json ({ app, backup, created, settings, library, books: [meta] }) and books/<id> raw files.
 let bkpBusy = false;
@@ -1753,7 +2101,8 @@ async function exportBackup(withFiles) {
   if (!metas.length) { toast('Полка пуста — сохранять нечего'); return; }
   toast('Готовлю резервную копию…', 60000);
   const zip = new JSZip();
-  zip.file('polka-backup.json', JSON.stringify({ app: 'polka', backup: 1, created: Date.now(), settings: S, library: { sort: L.sort, filter: L.filter }, books: metas }));
+  const stats = await DB.all('stats').catch(() => []);
+  zip.file('polka-backup.json', JSON.stringify({ app: 'polka', backup: 1, created: Date.now(), settings: S, library: { sort: L.sort, filter: L.filter, tag: L.tag }, books: metas, stats }));
   if (withFiles) for (const m of metas) {
     const f = await DB.get('files', m.id);
     if (f) zip.file('books/' + m.id, f.data, { compression: m.format === 'epub' || /\.zip$/i.test(m.name || '') ? 'STORE' : 'DEFLATE' });
@@ -1804,9 +2153,16 @@ async function importBackup(file) {
       await DB.put('meta', m);
       added++;
     }
+    // Statistics: per day keep the larger value, so restoring the same copy twice changes nothing
+    for (const d of Array.isArray(data.stats) ? data.stats : []) {
+      if (!d || !/^\d{4}-\d\d-\d\d$/.test(d.id)) continue;
+      const cur = await DB.get('stats', d.id) || emptyDay(d.id), books = { ...cur.books };
+      Object.entries(d.books || {}).forEach(([id, ms]) => books[id] = Math.max(books[id] || 0, ms));
+      await DB.put('stats', { id: d.id, ms: Math.max(cur.ms, d.ms || 0), chars: Math.max(cur.chars, d.chars || 0), books });
+    }
   } catch (e) { console.error(e); toast('Восстановление прервалось: ' + e.message, 6000); renderLibrary(); return; }
   if (data.settings) { for (const k in DEFAULTS) if (k in data.settings) S[k] = data.settings[k]; applySettings(); }
-  if (data.library) { if (SORTS[data.library.sort]) L.sort = data.library.sort; if (data.library.filter) L.filter = data.library.filter; saveLib(); }
+  if (data.library) { if (SORTS[data.library.sort]) L.sort = data.library.sort; if (data.library.filter) L.filter = data.library.filter; if (data.library.tag) L.tag = data.library.tag; saveLib(); }
   await renderLibrary();
   const parts = [added && `добавлено книг: ${added}`, updated && `обновлено: ${updated}`, missing && `без файла пропущено: ${missing}`].filter(Boolean);
   toast(parts.length ? 'Готово — ' + parts.join(', ') : 'В копии нет книг', 6000);
